@@ -1,0 +1,74 @@
+# Publishes the interactive demo to GitHub Pages on every push to main.
+#
+# The site is one file. `app/self-reflection.html` is the whole app with the
+# engine bundled into it, so "building the site" is: build it, and serve it as
+# the index. Nothing is copied by hand and nothing is committed twice — the
+# published page is always a build of the source in the same commit.
+#
+# `npm test` runs before the deploy on purpose. Every level the page shows is
+# arithmetic from `packages/core`, so a red engine test means the numbers on
+# the published page are wrong; better to leave the last good site up.
+name: Deploy demo to Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; a queued run supersedes an older one rather than
+# racing it. In-progress runs finish, so a deploy is never half-applied.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      # The engine behind every number on the page.
+      - run: npm test
+
+      - run: npm run build
+
+      - name: Assemble the site
+        run: |
+          mkdir -p _site
+          cp app/self-reflection.html _site/index.html
+          # Without this, Pages runs Jekyll and drops anything beginning with
+          # an underscore. There is nothing like that here yet; there will be
+          # the first time someone adds an asset folder.
+          touch _site/.nojekyll
+
+      # `enablement: true` turns Pages on if it is off, so this can publish
+      # without anyone visiting Settings first. It is a no-op once enabled.
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

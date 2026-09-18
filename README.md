@@ -7,13 +7,31 @@ This repository is one feature of [LifeOS](https://github.com/myho63/lifeOS),
 extracted so it can be read, run and shared on its own. Nothing else from the
 platform is here — no dashboard, no goals, no habits, no career matching.
 
+### ▶ Try it: **https://myho63.github.io/LifeOS-self-reflection/**
+
+Click **Load sample entries** at the foot of the page. Without them the panels
+are honestly empty: they read only *your own* check-ins, and the seeded history
+in the calendar is never scored.
+
+Everything you enter stays in your own browser. Every level, direction and
+confidence on that page is computed in it — there is no server and no account.
+The one thing the hosted page cannot do is the *What's changing?* panel, which
+asks Claude and so only runs where a Claude viewer is present; the numbers do
+not depend on it.
+
 ```bash
 npm install
 npm test              # 144 tests over the engine
 npm run build         # → app/self-reflection.html
 ```
 
-Then open `app/self-reflection.html`. No server, no key, no network call.
+Then open `app/self-reflection.html`. No server, no key, no network call. The
+build is deterministic: two builds of the same source produce the same bytes,
+and the committed HTML is exactly what `npm run build` writes.
+
+Pushing to `main` republishes the hosted demo from that same build
+(`.github/workflows/pages.yml`), and the deploy is gated on `npm test` — a red
+engine test means the numbers would be wrong, so the last good site stays up.
 
 ## What it does
 

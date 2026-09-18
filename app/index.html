@@ -3300,6 +3300,33 @@ function localSave(edits) {
   }
 }
 
+/**
+ * Can this browser keep anything, asked before anything is written.
+ *
+ * The tier used to be settled inside `persist()`, which only runs once
+ * somebody edits something — so until then the page reported the pessimistic
+ * default and told every new visitor that nothing could be stored and the
+ * session would end with the tab. On a plain web host that is simply untrue,
+ * and it is the first thing they read about their own data.
+ *
+ * Probed once with a throwaway key, because the honest answer costs a write:
+ * private windows, blocked site data and sandboxed frames all throw, and only
+ * a real attempt tells them apart.
+ */
+let localOk = null;
+function canStoreLocally() {
+  if (localOk !== null) return localOk;
+  try {
+    const probe = `${STORE_KEY}.probe`;
+    localStorage.setItem(probe, '1');
+    localStorage.removeItem(probe);
+    localOk = true;
+  } catch {
+    localOk = false;
+  }
+  return localOk;
+}
+
 /** Per-key merge; `over` wins. Used when a saved copy lands after an edit. */
 function mergeEdits(base, over) {
   const out = emptyEdits();
@@ -6046,6 +6073,9 @@ function renderStorageState() {
     + Object.keys(S.edits.habitDays).length + Object.keys(S.edits.ratings).length
     + Object.keys(S.edits.signals).length + Object.keys(S.edits.ikigai).length
     + S.edits.newHabits.length;
+  // Nothing has been written yet, so nothing has settled the tier. Ask.
+  if (storeTier === 'memory' && canStoreLocally()) storeTier = 'browser';
+
   const node = $('#store-state');
   node.textContent = '';
   const icon = svgEl('svg', { width: 12, height: 12, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2, 'aria-hidden': 'true' });
