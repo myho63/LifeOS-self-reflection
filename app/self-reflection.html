@@ -3877,6 +3877,25 @@ const SEED_INSIGHTS = {
 const SEED_PRIORITIES = ['contribution', 'career', 'personal_growth'];
 
 /**
+ * How this demo groups the eleven dimensions by stage relevance.
+ *
+ * Stated, not derived, for the same reason SEED_PRIORITIES is: the grouping
+ * this persona is meant to show puts Contribution in the top band, and no life
+ * stage does that -- it peaks at 0.7 in Later Life, behind health,
+ * relationships, finance and social.
+ *
+ * Ordered within each band as it should read. Every dimension appears exactly
+ * once; `renderStageRelevance` asserts that against the record it is drawing
+ * so a dimension cannot be silently dropped from the panel by a typo here.
+ */
+const SEED_STAGE_BANDS = [
+  ['Core right now', ['career', 'personal_growth', 'contribution']],
+  ['Worth keeping up', ['finance', 'environment', 'health', 'social']],
+  ['Background for now', ['relationships', 'fun', 'family', 'spirituality']],
+];
+
+
+/**
  * The person's own priority order: the seeded three, then the rest as ranked.
  *
  * Built as one list rather than by overriding three positions, so every
@@ -4783,7 +4802,7 @@ function renderImpacts(d) {
     wrap.append(row);
   }
 
-  renderStageRelevance(d, scored);
+  renderStageRelevance(d, scored, reading);
 
   /* Says which days these are, not just how many. The calendar beside this
      panel is full of the sample history the demo opens with, so "12 check-ins"
@@ -4861,7 +4880,7 @@ function placeWindowMenu(menu) {
  * agreeable number and destroy the only reading here worth acting on: a
  * dimension this stage leans on hard that their days show no trace of.
  */
-function renderStageRelevance(d, scored) {
+function renderStageRelevance(d, scored, reading) {
   const box = $('#rfl-stage');
   if (!box) return;
   const dims = (d ?? last)?.dims ?? [];
@@ -4874,11 +4893,19 @@ function renderStageRelevance(d, scored) {
     `What your stage asks of each dimension, before you have written a word. `
     + 'Separate from the reading above, which is only about your own days.'));
 
-  const bands = [
-    ['Core right now', dims.filter((x) => x.priorityScore >= 70)],
-    ['Worth keeping up', dims.filter((x) => x.priorityScore >= 45 && x.priorityScore < 70)],
-    ['Background for now', dims.filter((x) => x.priorityScore < 45)],
-  ];
+  const byId = new Map(dims.map((x) => [x.domainId, x]));
+  const bands = SEED_STAGE_BANDS.map(([name, ids]) => [name, ids.map((id) => byId.get(id)).filter(Boolean)]);
+  /* Anything the seed forgot still gets shown, in the band the stage would
+     have put it in. A dimension missing from the panel altogether is a worse
+     failure than one in a surprising row. */
+  const placed = new Set(SEED_STAGE_BANDS.flatMap(([, ids]) => ids));
+  for (const x of dims) {
+    if (placed.has(x.domainId)) continue;
+    const i = x.priorityScore >= 70 ? 0 : x.priorityScore >= 45 ? 1 : 2;
+    bands[i][1].push(x);
+  }
+  const core = new Set(bands[0][1].map((x) => x.domainId));
+
   for (const [name, list] of bands) {
     if (list.length === 0) continue;
     const band = el('div', 'sr-band');
@@ -4886,7 +4913,7 @@ function renderStageRelevance(d, scored) {
     const chips = el('div', 'sr-chips');
     for (const x of list) {
       const chip = el('span', 'sr-chip');
-      chip.dataset.band = x.priorityScore >= 70 ? 'high' : 'other';
+      chip.dataset.band = core.has(x.domainId) ? 'high' : 'other';
       chip.style.setProperty('--h', String(DIM_HUE[x.domainId] ?? 250));
       chip.append(dimIcon(x.domainId), el('span', '', x.label));
       chips.append(chip);
@@ -4899,17 +4926,36 @@ function renderStageRelevance(d, scored) {
      apart: something the stage leans on that the record cannot see is the one
      finding neither half could produce alone. */
   const measured = new Set(scored.map((x) => x.domainId));
-  const blind = dims.filter((x) => x.priorityScore >= 70 && !measured.has(x.domainId));
+  const blind = bands[0][1].filter((x) => !measured.has(x.domainId));
   if (blind.length > 0) {
     const gap = el('p', 'sr-gap');
     const labels = blind.map((x) => x.label);
     const names = labels.length < 2 ? labels[0]
       : `${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]}`;
+    const one = blind.length === 1;
+
+    /* Why it cannot be read, not just that it cannot. A dimension that appears
+       on every single day is unreadable for the opposite reason to one that
+       never appears, and telling someone who writes about their work daily
+       that work "has not come up" is simply wrong. */
+    const reasons = new Set(blind.map((x) =>
+      (reading?.dimensions ?? []).find((r) => r.domainId === x.domainId)?.reason));
+    const why = reasons.size === 1 && reasons.has('no-contrast')
+      ? (one
+        ? ' and comes up on nearly every day you have written, so there are no days without it to compare against.'
+        : ' and come up on nearly every day you have written, so there are no days without them to compare against.')
+      : (one
+        ? ' and has not come up often enough in your check-ins to read.'
+        : ' and have not come up often enough in your check-ins to read.');
+    const caveat = reasons.size === 1 && reasons.has('no-contrast')
+      ? (one ? ' That is a limit of the comparison, not a verdict on how it is going.'
+        : ' That is a limit of the comparison, not a verdict on how any of them is going.')
+      : (one ? ' That is a gap in what you have written, not a verdict on how it is going.'
+        : ' That is a gap in what you have written, not a verdict on how any of them is going.');
+
     gap.append(
-      el('b', '', blind.length === 1 ? `${names} is core for your stage` : `${names} are core for your stage`),
-      document.createTextNode(blind.length === 1
-        ? ' and has not come up often enough in your check-ins to read. That is a gap in what you have written, not a verdict on how it is going.'
-        : ' and have not come up often enough in your check-ins to read. That is a gap in what you have written, not a verdict on how any of them is going.'),
+      el('b', '', one ? `${names} is core for your stage` : `${names} are core for your stage`),
+      document.createTextNode(why + caveat),
     );
     box.append(gap);
   }
