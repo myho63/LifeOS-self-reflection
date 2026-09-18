@@ -1565,15 +1565,14 @@
      what we noticed. The columns below are an enhancement for a card wide
      enough to carry them, not the thing this degrades from. */
   .impt-head, .impt-row {
-    display: grid; grid-template-columns: minmax(0, 1fr) 12px;
-    grid-template-areas: 'dim go' 'read read' 'conf conf' 'said said';
+    display: grid; grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'dim' 'read' 'conf' 'said';
     gap: 5px 10px; align-items: center;
   }
   .impt-dim  { grid-area: dim; }
   .impt-read { grid-area: read; }
   .impt-conf { grid-area: conf; }
   .impt-said { grid-area: said; }
-  .impt-go   { grid-area: go; align-self: start; }
   /* Stacked, a dimension with nothing behind it is three lines saying so. The
      badge is the whole message; an empty meter and a sentence repeated down
      nine rows bury the two rows that have something to report. */
@@ -1587,7 +1586,6 @@
     border-top: 1px solid var(--border);
     padding: 11px 8px; border-radius: var(--r-sm);
   }
-  .impt-row:hover { background: var(--surface-alt); }
   .impt-row[data-band="insufficient"] .impt-nm { color: var(--ink-mid); }
 
   .impt-dim { display: flex; align-items: center; gap: 10px; min-width: 0; }
@@ -1651,8 +1649,6 @@
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
   .impt-said.arith { color: var(--ink-soft); }
-  .impt-go { color: var(--ink-soft); font-size: var(--fs-lg); line-height: 1; justify-self: end; }
-  .impt-row:hover .impt-go { color: var(--accent); }
 
   /* Wide enough for the columns to mean something. A container query rather
      than a viewport one: this card is laid out beside others and its own
@@ -1665,29 +1661,26 @@
     .impt-head, .impt-row {
       grid-template-areas: none;
       grid-template-columns:
-        minmax(128px, 1fr) minmax(118px, auto) minmax(92px, auto) minmax(0, 1.3fr) 10px;
+        minmax(128px, 1fr) minmax(118px, auto) minmax(92px, auto) minmax(0, 1.3fr);
       gap: 10px;
     }
     /* Auto-placed in source order once the areas are off, which is the same
        five cells left to right. */
-    .impt-dim, .impt-read, .impt-conf, .impt-said, .impt-go { grid-area: auto; }
-    .impt-go { align-self: center; }
+    .impt-dim, .impt-read, .impt-conf, .impt-said { grid-area: auto; }
     .impt-row[data-band="insufficient"] .impt-conf { display: flex; }
     .impt-row[data-reason="not-mentioned"] .impt-said.arith { display: -webkit-box; }
     .impt-head {
       display: grid; padding: 0 8px 8px; border-bottom: 1px solid var(--border);
       font-size: var(--fs-xs); font-weight: 700; color: var(--ink-soft);
     }
-    .impt-head span:last-child { visibility: hidden; }
     .impt-row:first-of-type { border-top: 0; }
   }
 
   /* -------------------------------------------------- how this works */
   /* Two lines and a mark. The method used to expand from here behind a "Learn
-     more"; it is gone, and what it said now lives where it is specific — each
-     row's drawer prints that dimension's own arithmetic, which is the sum a
-     reader might actually want to check. A general account of the method
-     above eleven rows was a second thing to read before the first one. */
+     more"; it is gone, and so is the per-row drawer that replaced it. Each
+     row now carries its own sentence or its own arithmetic in the last
+     column, which is the sum a reader might actually want to check. */
   .how {
     display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px;
     align-items: start; margin-bottom: 14px;
@@ -1767,15 +1760,7 @@
   }
 
   /* ------------------------------------------------------- demo chrome */
-  .demo-bar {
-    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px 18px;
-    align-items: center; background: var(--surface-alt);
-  }
-  .demo-copy b { font-size: var(--fs-md); }
-  .demo-copy p { margin: 3px 0 0; font-size: var(--fs-sm); line-height: 1.45; color: var(--ink-mid); }
-  .demo-acts { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   @media (max-width: 620px) {
-    .demo-bar { grid-template-columns: minmax(0, 1fr); }
   }
 
   /* -------------------------------------------------- the date window */
@@ -2648,21 +2633,6 @@
            panels above read only their own check-ins — correctly, but it
            means the headline panel opens empty for everyone who has not used
            it yet. So: a sample record they can load and clear again. -->
-      <section class="row row-r row-tail">
-        <article class="card demo-bar">
-          <div class="demo-copy">
-            <b>Trying this out?</b>
-            <p>Everything above reads <em>your own</em> check-ins — the seeded
-              history in the calendar is never scored. Load a couple of weeks
-              of sample entries to see the panels with something in them.</p>
-          </div>
-          <div class="demo-acts">
-            <button class="ask sm" id="demo-seed" type="button">Load sample entries</button>
-            <button class="more" id="reset" type="button">Clear my entries</button>
-          </div>
-          <p class="sub priv" id="store-state" style="grid-column:1/-1;margin:0">—</p>
-        </article>
-      </section>
     </div><!-- /view-reflection -->
 
 
@@ -3362,20 +3332,6 @@ function localSave(edits) {
  * private windows, blocked site data and sandboxed frames all throw, and only
  * a real attempt tells them apart.
  */
-let localOk = null;
-function canStoreLocally() {
-  if (localOk !== null) return localOk;
-  try {
-    const probe = `${STORE_KEY}.probe`;
-    localStorage.setItem(probe, '1');
-    localStorage.removeItem(probe);
-    localOk = true;
-  } catch {
-    localOk = false;
-  }
-  return localOk;
-}
-
 /** Per-key merge; `over` wins. Used when a saved copy lands after an edit. */
 function mergeEdits(base, over) {
   const out = emptyEdits();
@@ -3409,7 +3365,7 @@ async function connectStore() {
   } catch {
     store = null;
   }
-  if (!store) { renderStorageState(); return; }
+  if (!store) return;
 
   try {
     const [hist, snap, bodySnap] = await Promise.all([
@@ -3458,7 +3414,6 @@ async function connectStore() {
     if (dirty) persist();
   } catch {
     store = null;
-    renderStorageState();
   }
 }
 
@@ -4052,21 +4007,6 @@ const SAMPLE_DAYS = [
   [5, ['family'], 'Household jobs all morning, nothing left for me.'],
   [8, ['health'], 'Walk before the rain, good evening after.'],
 ];
-
-function loadSampleRecord() {
-  edit((e) => {
-    SAMPLE_DAYS.forEach(([mood, tags, text], i) => {
-      const d = new Date(`${TODAY}T00:00:00Z`);
-      d.setUTCDate(d.getUTCDate() - (SAMPLE_DAYS.length - i));
-      const date = d.toISOString().slice(0, 10);
-      e.checkIns[date] = mood;
-      e.notes[date] = text;
-      e.tags[date] = [...tags];
-      e.log.push({ at: `${date}T19:20:00.000Z`, date, text, tags: [...tags] });
-    });
-  });
-  render();
-}
 
 function derive() {
   /* The life-stage chain still runs in full: the tag chips and the life stage
@@ -4792,12 +4732,15 @@ function renderImpacts(d) {
 
   const head = el('div', 'impt-head');
   head.append(el('span', '', 'Dimension'), el('span', '', 'Impact on happiness'),
-    el('span', '', 'Confidence'), el('span', '', 'What we noticed'), el('span', '', ''));
+    el('span', '', 'Confidence'), el('span', '', 'What we noticed'));
   wrap.append(head);
 
   for (const r of reading.dimensions) {
-    const row = el('button', 'impt-row');
-    row.type = 'button';
+    /* A reading, not a control. There is nowhere for it to go: the drawer it
+       used to open is gone, and a row that still looked pressable would be
+       the worst of both. */
+    const row = el('div', 'impt-row');
+    row.setAttribute('role', 'listitem');
     // Not `data-dim`: the radar's ranking rows already own that, and a
     // reflection row carrying it gets scrolled to a rating instead of opened.
     row.dataset.impdim = r.domainId;
@@ -4836,7 +4779,6 @@ function renderImpacts(d) {
        dimension the panel forgot rather than one nothing is known about. */
     const said = notes[r.domainId];
     row.append(el('p', `impt-said${said ? '' : ' arith'}`, said || explainReading(r)));
-    row.append(el('span', 'impt-go', '›'));
 
     wrap.append(row);
   }
@@ -5602,146 +5544,6 @@ function asDrawn(item) {
     ideas: Array.isArray(item.ideas) ? item.ideas : [],
     excerpts: text && date ? [{ date, text }] : [],
   };
-}
-
-/**
- * One dimension, at length.
- *
- * Built so the two readings can be seen not to be the same reading. The
- * measurement comes first with its own arithmetic printed underneath, so
- * anyone who disagrees with the level can check the sum that produced it;
- * what the model wrote is next and is labelled as a reading of their words;
- * the stage's own priority is last, under its own heading, with a sentence
- * saying it was not derived from anything above it.
- */
-function openDimension(domainId) {
-  if (!DOMAIN[domainId]) return;
-  drawerReturn = `.impt-row[data-impdim="${domainId}"]`;
-  S.dimOpen = domainId;
-  $('#ins-veil').classList.add('open');
-  const drawer = $('#ins-drawer');
-  drawer.classList.add('open');
-  drawer.setAttribute('aria-hidden', 'false');
-  drawDimension(domainId);
-  document.body.style.overflow = 'hidden';
-  $('#ins-close').focus();
-}
-
-function drawDimension(domainId) {
-  const body = $('#ins-body');
-  body.textContent = '';
-  const { reading, notes } = reflectionReading();
-  const r = reading.dimensions.find((x) => x.domainId === domainId);
-  if (!r) return;
-  const hue = String(DIM_HUE[domainId] ?? 250);
-  body.style.setProperty('--h', hue);
-  $('#ins-drawer').style.setProperty('--h', hue);
-
-  const top = el('div', 'dr-top');
-  top.append(iconIn('badge', domainId));
-  const pills = el('div', 'dr-pills');
-  const band = el('span', 'impt-band', BANDS[r.band]);
-  band.dataset.band = r.band;
-  pills.append(el('span', 'dim', r.label), band);
-  if (r.band !== 'insufficient') {
-    const dir = el('span', 'impt-dir');
-    dir.dataset.dir = r.direction;
-    dir.append(el('b', '', DIRS[r.direction].mark), el('span', '', DIRS[r.direction].label));
-    pills.append(dir);
-  }
-  top.append(pills);
-  body.append(top);
-
-  const h = el('h3', 'dr-head', r.band === 'insufficient'
-    ? `${r.label}: not enough to read yet`
-    : `${r.label} looks ${BANDS[r.band].toLowerCase()}-impact and ${DIRS[r.direction].label.toLowerCase()}`);
-  h.id = 'ins-head';
-  body.append(h);
-
-  // --- the measurement, with its working shown
-  const sum = el('section', 'dr-sec');
-  const sh = el('h4');
-  sh.append(el('span', 'ico', '\u{1F4CA}'), el('span', '', 'How this was measured'),
-    el('span', 'from', 'Computed, not written'));
-  sum.append(sh);
-  sum.append(el('p', 'dr-lede', explainReading(r)));
-  if (r.band !== 'insufficient') {
-    const facts = el('ul', 'dr-ideas');
-    facts.append(el('li', '', `Reach \u2014 came up on ${Math.round(r.reach * 100)}% of the check-ins in this window.`));
-    facts.append(el('li', '', `Difference \u2014 ${Math.abs(r.delta).toFixed(1)} points of happiness, `
-      + `${r.delta >= 0 ? 'in favour of' : 'against'} the days it appears.`));
-    facts.append(el('li', '', `Evidence \u2014 that difference is pinned to within about `
-      + `${r.margin.toFixed(1)} points either way, which is why confidence reads `
-      + `${CONF[r.confidence].toLowerCase()}.`));
-    sum.append(facts);
-    const conf = el('div', 'dr-pri-row');
-    conf.append(meterEl(r.confidenceSteps), el('b', '', `${CONF[r.confidence]} confidence`));
-    sum.append(conf);
-  }
-  body.append(sum);
-
-  // --- what the model made of it, kept in its own box and labelled
-  const said = notes[domainId];
-  const found = S.edits.insights?.items.find((x) => x.dimension === domainId);
-  if (said || found) {
-    const noticed = el('section', 'dr-sec');
-    const nh = el('h4');
-    nh.append(el('span', 'ico', '\u{1F4C4}'), el('span', '', 'What we noticed'),
-      el('span', 'from', 'Read from your words'));
-    noticed.append(nh);
-    if (said) noticed.append(el('p', 'dr-lede', said));
-    if (found) {
-      const quotes = el('div', 'dr-quotes');
-      for (const ex of asDrawn(found).excerpts) {
-        const box2 = el('div', 'dr-quote');
-        box2.append(el('q', '', ex.text), el('span', 'when', longDay(ex.date)));
-        quotes.append(box2);
-      }
-      noticed.append(quotes);
-    }
-    body.append(noticed);
-  }
-
-  /* --- and the other question entirely.
-     Under its own heading, with the sentence that keeps the two apart: this
-     number knows nothing about their week, and their week knows nothing about
-     it. The interesting case is when they disagree. */
-  const ranked = ((last)?.dims ?? []).find((x) => x.domainId === domainId);
-  if (ranked) {
-    const pri = el('section', 'dr-sec');
-    const ph = el('h4');
-    ph.append(el('span', 'ico', '\u{1F3AF}'), el('span', '', 'Life stage relevance'),
-      el('span', 'from', 'From your stage, not your check-ins'));
-    pri.append(ph);
-    const box3 = el('div', 'dr-pri');
-    const row = el('div', 'dr-pri-row');
-    row.append(iconIn('ico', domainId), el('b', '', r.label),
-      el('span', 'dr-rank', `#${ranked.rank} of eleven for your stage`));
-    box3.append(row);
-    box3.append(el('p', '', ranked.rank <= 3
-      ? `${r.label} is one of the things your stage of life leans on hardest right now.`
-      : `${r.label} sits at #${ranked.rank} of eleven for your stage right now.`));
-    box3.append(el('p', '', r.band === 'insufficient'
-      ? 'This is worked out from where you are in life, so it stands whether or not '
-        + 'your check-ins have anything to say about it yet \u2014 and right now they do not.'
-      : 'This is worked out from where you are in life. It is not part of the impact '
-        + 'level above, and the two are meant to be read against each other rather than '
-        + 'averaged together.'));
-    pri.append(box3);
-    body.append(pri);
-  }
-
-  const chat = el('div', 'dr-chat');
-  const ch = el('h4');
-  ch.append(el('span', '', '\u{1F4AC}'), el('span', '', 'Want to explore this further?'));
-  const crow = el('div', 'dr-chat-row');
-  crow.append(el('p', '', `Chat with LifeOS about ${r.label.toLowerCase()} with your full context.`));
-  const cbtn = el('button', 'ask sm', 'Chat with LifeOS \u2192');
-  cbtn.type = 'button';
-  cbtn.id = 'ins-chat';
-  crow.append(cbtn);
-  chat.append(ch, crow);
-  body.append(chat);
 }
 
 function openInsight(dimension) {
@@ -6551,45 +6353,6 @@ function drawDonut(svg, c) {
 /* ------------------------------------------------------ time and work */
 
 
-/**
- * Whether this session will still be here next time.
- *
- * The sample history is a fixed function of the calendar, so it reads the same
- * on every load. Anything the person changes is kept separately and written to
- * the browser — which is this demo's stand-in for signing back in. When the
- * browser will not keep it, the page says so rather than quietly forgetting.
- */
-function renderStorageState() {
-  const n = Object.keys(S.edits.checkIns).length + Object.keys(S.edits.notes).length
-    + Object.keys(S.edits.habitDays).length + Object.keys(S.edits.ratings).length
-    + Object.keys(S.edits.signals).length + Object.keys(S.edits.ikigai).length
-    + S.edits.newHabits.length;
-  // Nothing has been written yet, so nothing has settled the tier. Ask.
-  if (storeTier === 'memory' && canStoreLocally()) storeTier = 'browser';
-
-  const node = $('#store-state');
-  node.textContent = '';
-  const icon = svgEl('svg', { width: 12, height: 12, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2, 'aria-hidden': 'true' });
-  icon.append(svgEl('rect', { x: 4, y: 10, width: 16, height: 11, rx: 2 }), svgEl('path', { d: 'M8 10V7a4 4 0 0 1 8 0v3' }));
-
-  const where = {
-    account: 'your account — they will be here when you sign back in',
-    browser: 'this browser',
-    memory: null,
-  }[storeTier];
-
-  node.append(icon, document.createTextNode(
-    where === null
-      ? ' Nothing here can be stored, so this session ends when you close the tab.'
-      : n === 0
-        ? ` The sample history is fixed. Anything you change is kept in ${where}.`
-        : ` ${n} change${n === 1 ? '' : 's'} of yours, kept in ${where}.`,
-  ));
-}
-
-
-
-
 function renderSafety() {
   const b = $('#safety-banner');
   if (!S.safety) { b.hidden = true; b.textContent = ''; return; }
@@ -6686,7 +6449,6 @@ function render() {
   draw(failed, "today's note", () => renderNote(d));
   draw(failed, 'the insights', () => renderInsights());
   draw(failed, 'the reflection log', () => renderReflog());
-  draw(failed, 'the storage note', () => renderStorageState());
 
   renderBroken(failed);
 
@@ -6883,27 +6645,6 @@ window.addEventListener('click', (e) => {
 
   if (t.id === 'ai-close') { $('#ai-dialog').close(); return; }
 
-  if (t.id === 'demo-seed') { loadSampleRecord(); return; }
-
-  if (t.id === 'reset') {
-    // Reset has to clear every tier, or everything comes straight back on the
-    // next load and the button is a lie.
-    try { localStorage.removeItem(STORE_KEY); } catch { /* nothing to clear */ }
-    store?.doc('state/edits').delete().catch(() => {});
-    dirty = false;
-    reset();
-    bodyBaseline = null;
-    // The old sample is replaced rather than deleted: a delete racing this
-    // write would leave nothing frozen, and the next load would generate a
-    // third sample nobody asked for.
-    freezeBaseline();
-    freezeBody();
-    section = 'dashboard';
-    closeComposer();
-    render();
-    return;
-  }
-
   /* Saving today's reflection. The note is screened before it is kept: an
      end-of-day journal is the single most likely place in this product for
      distress to surface, and storing it silently under a mood chart would be
@@ -6940,9 +6681,6 @@ window.addEventListener('click', (e) => {
     return;
   }
   if (t.id === 'rfl-win') { S.rflMenu = !S.rflMenu; renderWindowMenu(); return; }
-  const impRow = t.closest('.impt-row');
-  if (impRow) { openDimension(impRow.dataset.impdim); return; }
-
   /* The one place a finding turns into something to do. The task carries the
      dimension, so it lands beside the rest of that dimension's work rather
      than in a pile of things with no home. */
