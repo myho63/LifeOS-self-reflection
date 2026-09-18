@@ -3679,10 +3679,233 @@ const SEED_REFLECTIONS = [
  */
 const SEED_V = 2;
 
+/**
+ * The reading of those fifteen days, as it came back.
+ *
+ * Seeded rather than asked for. This panel reads the record with Claude on
+ * the viewer's own account, and that account does not exist outside the
+ * artifact: opened from a plain web host there is no `sample` to call, so an
+ * unseeded copy of this page can only ever say the panel is unavailable. The
+ * findings below were generated from exactly these entries, so the page shows
+ * the same thing wherever it is opened.
+ *
+ * `key` fingerprints the days it was read from, and `ownDays` builds those
+ * from the seeded edits alone -- never from the sample history -- so this
+ * stays matched to SEED_REFLECTIONS and goes stale the moment a viewer checks
+ * in for themselves, which is when it should.
+ */
+const SEED_INSIGHTS = {
+  at: "2026-09-18T06:51:36.384Z",
+  attributions: [
+    {
+      date: "2026-09-02",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-03",
+      dimensions: [
+        "career",
+        "personal_growth",
+        "contribution"
+      ]
+    },
+    {
+      date: "2026-09-04",
+      dimensions: [
+        "career",
+        "contribution"
+      ]
+    },
+    {
+      date: "2026-09-05",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-06",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-07",
+      dimensions: [
+        "career"
+      ]
+    },
+    {
+      date: "2026-09-08",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-09",
+      dimensions: [
+        "career",
+        "personal_growth",
+        "contribution"
+      ]
+    },
+    {
+      date: "2026-09-10",
+      dimensions: [
+        "career"
+      ]
+    },
+    {
+      date: "2026-09-11",
+      dimensions: [
+        "career",
+        "contribution"
+      ]
+    },
+    {
+      date: "2026-09-12",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-13",
+      dimensions: [
+        "career",
+        "personal_growth",
+        "contribution"
+      ]
+    },
+    {
+      date: "2026-09-14",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-15",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-16",
+      dimensions: [
+        "career",
+        "personal_growth",
+        "contribution"
+      ]
+    }
+  ],
+  days: 15,
+  items: [
+    {
+      common: "days where fragmented tasks or context switching left you without deep work done",
+      detail: "Several of your lower-mood days describe scattered attention, meetings, or coordination that crowded out the work you actually wanted to focus on.",
+      dimension: "career",
+      excerpts: [
+        {
+          date: "2026-09-12",
+          text: "I had too many things that needed attention at the same time"
+        },
+        {
+          date: "2026-09-10",
+          text: "Lots of meetings and context switching. Nothing went badly, but I didn't get much deep work done."
+        },
+        {
+          date: "2026-09-07",
+          text: "Spent too much time dealing with fragmented tasks and coordination"
+        },
+        {
+          date: "2026-09-05",
+          text: "Too many parallel things competing for attention today"
+        }
+      ],
+      headline: "Fragmented, context-switching days seem to wear on you",
+      ideas: [
+        "Try blocking off a protected stretch of uninterrupted time before meetings fill the day",
+        "Notice which days feel scattered and see if they share a common trigger, like too many meetings"
+      ],
+      verdict: "attention"
+    },
+    {
+      common: "days where deep focus led to a clearer or better solution",
+      detail: "Your happiest entries repeatedly describe stepping back, thinking deeply, or working through a hard problem until it clicked.",
+      dimension: "personal_growth",
+      excerpts: [
+        {
+          date: "2026-09-14",
+          text: "A complicated problem became much clearer after stepping back and looking at the system as a whole"
+        },
+        {
+          date: "2026-09-09",
+          text: "Had a breakthrough today. The model finally behaved the way I expected"
+        },
+        {
+          date: "2026-09-08",
+          text: "Finally had uninterrupted time to think deeply about a difficult problem. The quality of the work was noticeably better."
+        },
+        {
+          date: "2026-09-02",
+          text: "Once the pieces started fitting together, the solution became surprisingly elegant."
+        }
+      ],
+      headline: "Uninterrupted, deep focus seems to power your best days",
+      ideas: [
+        "Try protecting the conditions that led to these breakthroughs, like blocking uninterrupted thinking time",
+        "Notice what preceded the moments of clarity and see if they can be set up more deliberately"
+      ],
+      verdict: "working"
+    },
+    {
+      common: "days where helping turn an idea into something concrete felt satisfying",
+      detail: "You repeatedly note satisfaction when technical work becomes something a team or business can actually use.",
+      dimension: "contribution",
+      excerpts: [
+        {
+          date: "2026-09-16",
+          text: "The most satisfying part of the day was helping someone turn a vague idea into a concrete solution"
+        },
+        {
+          date: "2026-09-11",
+          text: "Seeing an idea become a working product is still one of my favorite parts of the job"
+        },
+        {
+          date: "2026-09-03",
+          text: "Had a productive conversation where I could translate a complicated technical problem into something the business team could actually act on"
+        }
+      ],
+      headline: "Turning ideas into something concrete for others feels rewarding",
+      ideas: [
+        "Look for more opportunities to be the bridge between technical work and its real-world use",
+        "Keep a note of these moments to see if they cluster around certain kinds of projects"
+      ],
+      verdict: "working"
+    }
+  ],
+  key: "1t0gmv5",
+  notes: {
+    career: "swings between energizing deep-focus days and draining, fragmented ones",
+    contribution: "turning abstract technical ideas into something others can use feels satisfying",
+    personal_growth: "stepping back to see the whole problem tends to bring clarity"
+  },
+  summary: "You seem energized by deep, focused technical work and by turning technical ideas into something concrete for others, while fragmented, meeting-heavy days consistently coincide with your lower-mood entries.",
+  v: 5
+};
+
 /** The seeded entries, fanned out into the four records a real save writes. */
 function seedEdits() {
   const e = emptyEdits();
   e.seedV = SEED_V;
+  e.insights = structuredClone(SEED_INSIGHTS);
   for (const r of SEED_REFLECTIONS) {
     e.checkIns[r.date] = r.mood;
     e.notes[r.date] = r.text;
@@ -5281,7 +5504,11 @@ function renderInsights() {
     when.hidden = false;
     when.textContent = `Ready to read ${count}.`;
   }
-  go.hidden = S.insightState === 'unavailable';
+  /* Absent where it could not work. Opened from a plain web host there is no
+     `sample` to call, and a seeded reading means the code never reaches the
+     probe that would have found that out -- so the button offered a read it
+     would answer by quietly removing itself. */
+  go.hidden = S.insightState === 'unavailable' || typeof window.claude?.use !== 'function';
   go.textContent = stored ? 'Look again' : 'Look for patterns';
 }
 
