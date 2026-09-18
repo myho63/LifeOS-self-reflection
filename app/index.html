@@ -3901,6 +3901,38 @@ const SEED_INSIGHTS = {
   v: 5
 };
 
+/**
+ * The order this demo presents as the person's own priorities.
+ *
+ * Fixed, because no life stage produces it. Contribution peaks at 0.7 in
+ * Later Life, behind health, relationships, finance and social; no stage
+ * rates contribution and career highly at once, since those belong to
+ * opposite ends of a working life. So this is a stated demo persona rather
+ * than a reading of one, in the same way the reflections and the findings
+ * above it are.
+ *
+ * It feeds the "Your current priority" section only. "Life stage relevance",
+ * here and in the dimension drawer, keeps reading the real stage ranking and
+ * is untouched: that section names the stage as its source, and seeding it
+ * would make the page claim something about a cohort that is not true. The
+ * two are allowed to disagree -- what someone is working on is not what their
+ * stage leans on, and the page says which is which.
+ */
+const SEED_PRIORITIES = ['contribution', 'career', 'personal_growth'];
+
+/**
+ * The person's own priority order: the seeded three, then the rest as ranked.
+ *
+ * Built as one list rather than by overriding three positions, so every
+ * dimension still has a distinct place and no two drawers can both claim the
+ * same number.
+ */
+function priorityOrder() {
+  const ids = (last?.dims ?? []).map((d) => d.domainId);
+  const seeded = SEED_PRIORITIES.filter((id) => ids.includes(id));
+  return [...seeded, ...ids.filter((id) => !seeded.includes(id))];
+}
+
 /** The seeded entries, fanned out into the four records a real save writes. */
 function seedEdits() {
   const e = emptyEdits();
@@ -5799,6 +5831,7 @@ function drawInsight(item) {
   // --- where this sits in their priorities, from the page's own ranking
   const ranked = (last?.dims ?? []).find((x) => x.domainId === item.dimension);
   if (ranked) {
+    const rank = priorityOrder().indexOf(item.dimension) + 1 || ranked.rank;
     const pri = el('section', 'dr-sec');
     const ph = el('h4');
     ph.append(el('span', 'ico', '🎯'), el('span', '', 'Your current priority'),
@@ -5808,11 +5841,11 @@ function drawInsight(item) {
     const row = el('div', 'dr-pri-row');
     row.append(iconIn('ico', item.dimension),
       el('b', '', dim?.label ?? item.dimension),
-      el('span', 'dr-rank', `#${ranked.rank} priority`));
+      el('span', 'dr-rank', `#${rank} priority`));
     box.append(row);
-    box.append(el('p', '', ranked.rank <= 3
+    box.append(el('p', '', rank <= 3
       ? `${dim?.label} is currently one of your top priorities, so this may be a good area to focus on now.`
-      : `${dim?.label} sits at #${ranked.rank} of eleven for your stage right now — worth knowing before you decide how much to take on here.`));
+      : `${dim?.label} sits at #${rank} of eleven in your priorities right now — worth knowing before you decide how much to take on here.`));
     pri.append(box);
     body.append(pri);
   }
