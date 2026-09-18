@@ -34,7 +34,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
 
       - run: npm ci
@@ -53,12 +53,13 @@ jobs:
           # the first time someone adds an asset folder.
           touch _site/.nojekyll
 
-      # `enablement: true` turns Pages on if it is off, so this can publish
-      # without anyone visiting Settings first. It is a no-op once enabled.
-      - uses: actions/configure-pages@v5
-        with:
-          enablement: true
-
+      # No `configure-pages` step: it exists to hand a base path to frameworks
+      # that need one, and this site is a single file at the root. An earlier
+      # version used it with `enablement: true` to switch Pages on from here,
+      # which cannot work — creating the Pages site needs repo-admin rights and
+      # the workflow token does not have them ("Resource not accessible by
+      # integration"). Pages has to be turned on once, by hand, with its source
+      # set to GitHub Actions; every push after that deploys on its own.
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
