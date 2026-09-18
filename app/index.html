@@ -1763,6 +1763,18 @@
     background: hsl(var(--h) 40% 19%); color: hsl(var(--h) 65% 68%);
   }
 
+  /* ------------------------------------------------------- demo chrome */
+  .demo-bar {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px 18px;
+    align-items: center; background: var(--surface-alt);
+  }
+  .demo-copy b { font-size: var(--fs-md); }
+  .demo-copy p { margin: 3px 0 0; font-size: var(--fs-sm); line-height: 1.45; color: var(--ink-mid); }
+  .demo-acts { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  @media (max-width: 620px) {
+    .demo-bar { grid-template-columns: minmax(0, 1fr); }
+  }
+
   /* -------------------------------------------------- the date window */
   /* The head carries a control now, so it is allowed to become two lines.
      Without this the date chip's own width is the card's minimum, and on a
@@ -2036,49 +2048,19 @@
 
 <style>
   /* --------------------------------------------------------- responsive
-     Three breakpoints, each dropping one column. The rail folds into the main
-     column rather than disappearing: on a phone those widgets are the product. */
-  @media (max-width: 1440px) {
-    .app { grid-template-columns: 214px minmax(0, 1fr); }
-    .row-b { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
-    /* Habits Overview drops to a full-width row rather than being squeezed
-       into a third of the width its donut and key need. */
-    .row-b > .card:last-child { grid-column: 1 / -1; }
-  }
-  @media (max-width: 1140px) {
-    .row-a { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .row-b { grid-template-columns: minmax(0, 1fr); }
-    .plan3 { grid-template-columns: minmax(0, 1fr); }
-    .checkin { flex-direction: column; align-items: stretch; }
-    .ci-hint { max-width: none; text-align: center; }
-  }
+     One column of cards, so there is no rail to fold away and no sidebar
+     width to defend. What is left is the reflection row collapsing to a
+     single column, and the page giving back its gutters on a phone. */
   @media (max-width: 820px) {
-    .app { grid-template-columns: minmax(0, 1fr); padding: 12px; gap: 12px; }
-    .side { position: static; }
-    .nav { grid-auto-flow: column; grid-auto-columns: max-content; overflow-x: auto; gap: 4px; }
-    .nav button { white-space: nowrap; }
-    .nav .tag { margin-left: 4px; }
-    .row-a, .row-r2 { grid-template-columns: minmax(0, 1fr); }
+    .app { padding: 12px; gap: 12px; }
+    .row-r2 { grid-template-columns: minmax(0, 1fr); }
     .journey { grid-template-columns: minmax(0, 1fr); }
-    /* Five equal columns rather than five content-width buttons: at a label
-       size you can read, the row no longer fits on a phone and a wrapped
-       fifth face reads as a different control. Now the long labels wrap
-       inside their own column and the scale stays one row. */
-    .faces { gap: 4px; flex-wrap: nowrap; }
-    .face { flex: 1 1 0; min-width: 0; padding: 5px 2px; font-size: var(--fs-2xs); line-height: 1.25; }
-    .face .bubble { width: 36px; height: 36px; font-size: 19px; }
-    .radar-wrap { grid-template-columns: minmax(0, 1fr); }
     .top h2 { font-size: 19px; }
     .top .right { margin-left: 0; width: 100%; }
-    /* The top bar's button only. Unscoped, this also caught Save Reflection
-       in the journal and shrink-wrapped it to the right-hand edge. */
-    .top .ask { margin-left: auto; }
-    .whoami-card .lv { display: none; }
-    .whoami-card .chev { display: none; }
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .ring-you, .ring-should, .bar i, .chart .line, .chart .area {
+    .bar i, .chart .line, .chart .area {
       transition: all .28s cubic-bezier(.4, 0, .2, 1);
     }
   }
@@ -2617,6 +2599,27 @@
         </details>
       </section>
 
+
+      <!-- Demo chrome, and the only thing on this page that is not the
+           feature. A visitor arrives with no check-ins of their own, and the
+           panels above read only their own check-ins — correctly, but it
+           means the headline panel opens empty for everyone who has not used
+           it yet. So: a sample record they can load and clear again. -->
+      <section class="row row-r row-tail">
+        <article class="card demo-bar">
+          <div class="demo-copy">
+            <b>Trying this out?</b>
+            <p>Everything above reads <em>your own</em> check-ins — the seeded
+              history in the calendar is never scored. Load a couple of weeks
+              of sample entries to see the panels with something in them.</p>
+          </div>
+          <div class="demo-acts">
+            <button class="ask sm" id="demo-seed" type="button">Load sample entries</button>
+            <button class="more" id="reset" type="button">Clear my entries</button>
+          </div>
+          <p class="sub priv" id="store-state" style="grid-column:1/-1;margin:0">—</p>
+        </article>
+      </section>
     </div><!-- /view-reflection -->
 
 
@@ -3583,6 +3586,49 @@ reset();
 // ---------------------------------------------------------------------------
 // Derivation — one pass, every render
 // ---------------------------------------------------------------------------
+
+/**
+ * A fortnight of check-ins, for a visitor who has none of their own.
+ *
+ * Written into their own entries rather than the seeded history, because the
+ * panels read only their own — that separation is the point, and a demo that
+ * worked by quietly scoring the sample would be demonstrating the opposite.
+ * Dated relative to today: a fixed date here would drift out of every window
+ * the panel offers within a month.
+ */
+const SAMPLE_DAYS = [
+  [7, ['health'], 'Long walk by the river, felt clear afterwards.'],
+  [4, ['career'], 'Back-to-back meetings and nothing of my own got done.'],
+  [3, ['career'], 'The deadline moved again and I worked late.'],
+  [8, ['health', 'fun'], 'Swim before work, then dinner with friends.'],
+  [4, ['career'], 'Another round of interviews, fresh anxiety each time.'],
+  [8, ['health'], 'Went for a walk and the afternoon felt lighter.'],
+  [5, ['family'], 'Cooking, cleaning and visiting relatives filled the whole day.'],
+  [9, ['health', 'fun'], 'Long run then a slow breakfast, no plans at all.'],
+  [3, ['career'], 'Work ran over and I missed the gym again.'],
+  [8, ['health'], 'Walked at lunch and came back to it properly.'],
+  [4, ['career', 'family'], 'Late again, and the in-law visit took the evening.'],
+  [7, ['health'], 'Short swim, early night.'],
+  [3, ['career'], 'Third interview round, same anxiety as the first.'],
+  [9, ['health', 'fun'], 'Rest day and it helped more than I expected.'],
+  [5, ['family'], 'Household jobs all morning, nothing left for me.'],
+  [8, ['health'], 'Walk before the rain, good evening after.'],
+];
+
+function loadSampleRecord() {
+  edit((e) => {
+    SAMPLE_DAYS.forEach(([mood, tags, text], i) => {
+      const d = new Date(`${TODAY}T00:00:00Z`);
+      d.setUTCDate(d.getUTCDate() - (SAMPLE_DAYS.length - i));
+      const date = d.toISOString().slice(0, 10);
+      e.checkIns[date] = mood;
+      e.notes[date] = text;
+      e.tags[date] = [...tags];
+      e.log.push({ at: `${date}T19:20:00.000Z`, date, text, tags: [...tags] });
+    });
+  });
+  render();
+}
 
 function derive() {
   /* The life-stage chain still runs in full: the tag chips and the life stage
@@ -6315,6 +6361,8 @@ window.addEventListener('click', (e) => {
   }
 
   if (t.id === 'ai-close') { $('#ai-dialog').close(); return; }
+
+  if (t.id === 'demo-seed') { loadSampleRecord(); return; }
 
   if (t.id === 'reset') {
     // Reset has to clear every tier, or everything comes straight back on the
