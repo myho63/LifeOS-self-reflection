@@ -3117,7 +3117,7 @@ const VISION = [
 
 /** Replaced at build time; reads as unbuilt when this file is opened directly. */
 
-const STORE_KEY = 'lifeos.demo.v1';
+const STORE_KEY = 'lifeos.demo.v2';
 const HISTORY_KEY = 'lifeos.demo.history.v1';
 const BODY_KEY = 'lifeos.demo.body.v1';
 
@@ -3237,6 +3237,8 @@ function unpackHistory(packed) {
 }
 
 const emptyEdits = () => ({
+  /** Which SEED_V this copy was written against; absent on copies older than the stamp. */
+  seedV: 0,
   /** date -> 0-10, or null for a day explicitly un-logged. */
   checkIns: {},
   /** date -> the note written that day. */
@@ -3329,7 +3331,10 @@ let storeTier = 'memory';
 function localLoad() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
-    return raw ? { ...emptyEdits(), ...JSON.parse(raw) } : null;
+    if (!raw) return null;
+    const saved = { ...emptyEdits(), ...JSON.parse(raw) };
+    // Same rule as the account's copy: an older seed is replaced, not merged.
+    return saved.seedV === SEED_V ? saved : null;
   } catch {
     return null;
   }
@@ -3375,7 +3380,9 @@ function canStoreLocally() {
 function mergeEdits(base, over) {
   const out = emptyEdits();
   for (const k of Object.keys(out)) {
-    if (Array.isArray(out[k])) {
+    // A scalar (the seed stamp) has no per-key merge; the newer copy carries it.
+    if (typeof out[k] === 'number') out[k] = over[k] ?? base[k] ?? out[k];
+    else if (Array.isArray(out[k])) {
       const seen = new Set((over[k] ?? []).map((x) => x.id));
       out[k] = [...(over[k] ?? []), ...(base[k] ?? []).filter((x) => !seen.has(x.id))];
     } else {
@@ -3430,9 +3437,17 @@ async function connectStore() {
          records nothing and shows nothing, on every visit after the first one
          that had something to load. */
       const saved = { ...emptyEdits(), ...structuredClone(snap.data().edits ?? {}) };
+      /* A copy written against an older seed is not this page's record any
+         more: the sample it was built on has been replaced. Reseeding is the
+         point of the bump, so it wins over the stored copy rather than being
+         masked by it, key by key. */
+      const fresh = saved.seedV === SEED_V ? saved : seedEdits();
       // An edit made while this was in flight must not be thrown away by the
       // copy that was saved before it.
-      S.edits = dirty ? mergeEdits(saved, S.edits) : saved;
+      S.edits = dirty ? mergeEdits(fresh, S.edits) : fresh;
+      // The account still holds the old copy; put the reseeded one back.
+      if (fresh !== saved) store.doc('state/edits')
+        .set({ edits: S.edits, savedAt: new Date().toISOString() }).catch(() => {});
     }
     if (stored || snap.exists) applyEdits();
     storeTier = 'account';
@@ -3580,12 +3595,110 @@ function edit(fn) {
 const SEED_IKIGAI = { love: 7, goodAt: 7, worldNeeds: 5, paidFor: 4 };
 
 let S;
+/**
+ * The reflections this demo opens with: 2 - 16 September, from the sample
+ * workbook.
+ *
+ * They are seeded as the person's own saved entries rather than as sample
+ * check-ins, because that is what they are — each one is a row in the
+ * Reflection log with the words, the dimensions and the face that were true
+ * when it was written. `seedEdits` fans each row out into the four places a
+ * real save touches, so the log, the calendar, the journal and the impact
+ * table all read from the same fifteen days instead of agreeing by accident.
+ *
+ * `mood` is the face value this app records, taken from the workbook's named
+ * feeling rather than its 0-10 column: the two scales do not line up (an 8
+ * there is "Happy", which is a 7 here), and the name is the part a person
+ * would recognise.
+ *
+ * The workbook's "Environment" is carried as `career`, not `environment`. It
+ * tags four days about meetings, fragmented tasks and context switching --
+ * how the work is structured -- and `environment` here is housing: where you
+ * live, rent versus buy, relocation. Filing those days under it would have
+ * the impact table report, at high confidence, that this person's home is the
+ * largest drag on their happiness, from four entries that never mention it.
+ * Career already sits on all four, so the tag folds away rather than
+ * doubling.
+ */
+const SEED_REFLECTIONS = [
+  { date: "2026-09-02", mood: 7, at: "2026-09-03T04:16:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "Spent the morning working through a difficult technical problem. Once the pieces started fitting together, the solution became surprisingly elegant." },
+  { date: "2026-09-03", mood: 9, at: "2026-09-04T03:47:00.000Z",
+    tags: ["career", "contribution", "personal_growth"],
+    text: "Had a productive conversation where I could translate a complicated technical problem into something the business team could actually act on." },
+  { date: "2026-09-04", mood: 7, at: "2026-09-05T05:05:00.000Z",
+    tags: ["career", "contribution"],
+    text: "Made progress on a product concept that connects technology with a real business problem. This is the kind of work I enjoy most." },
+  { date: "2026-09-05", mood: 5, at: "2026-09-06T04:58:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "Too many parallel things competing for attention today. Made progress, but not on the things I originally wanted to focus on." },
+  { date: "2026-09-06", mood: 7, at: "2026-09-07T03:31:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "Had a good day switching between strategy and technical problem solving. I like being able to see both sides of a problem." },
+  { date: "2026-09-07", mood: 3, at: "2026-09-08T05:12:00.000Z",
+    tags: ["career"],
+    text: "Spent too much time dealing with fragmented tasks and coordination. By the end of the day I felt like I had been busy without moving the most important work forward." },
+  { date: "2026-09-08", mood: 7, at: "2026-09-09T04:44:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "Finally had uninterrupted time to think deeply about a difficult problem. The quality of the work was noticeably better." },
+  { date: "2026-09-09", mood: 9, at: "2026-09-10T03:22:00.000Z",
+    tags: ["career", "personal_growth", "contribution"],
+    text: "Had a breakthrough today. The model finally behaved the way I expected and I could see how the technical pieces could become a real product." },
+  { date: "2026-09-10", mood: 5, at: "2026-09-11T04:51:00.000Z",
+    tags: ["career"],
+    text: "Lots of meetings and context switching. Nothing went badly, but I didn't get much deep work done." },
+  { date: "2026-09-11", mood: 7, at: "2026-09-12T05:09:00.000Z",
+    tags: ["career", "contribution"],
+    text: "Worked with the team on turning an abstract idea into something much more concrete. Seeing an idea become a working product is still one of my favorite parts of the job." },
+  { date: "2026-09-12", mood: 3, at: "2026-09-13T03:37:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "I had too many things that needed attention at the same time. I probably need to be more deliberate about what deserves my attention first." },
+  { date: "2026-09-13", mood: 7, at: "2026-09-14T04:26:00.000Z",
+    tags: ["personal_growth", "contribution", "career"],
+    text: "Spent some time thinking about where technology is heading and what kinds of problems are actually worth solving. Those conversations give me energy." },
+  { date: "2026-09-14", mood: 9, at: "2026-09-15T05:55:00.000Z",
+    tags: ["personal_growth", "career"],
+    text: "A complicated problem became much clearer after stepping back and looking at the system as a whole rather than optimizing individual pieces." },
+  { date: "2026-09-15", mood: 5, at: "2026-09-16T04:18:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "Productive overall, but I noticed that I keep moving between long-term strategic thinking and immediate execution. I'm not sure I've found the right balance yet." },
+  { date: "2026-09-16", mood: 7, at: "2026-09-17T03:41:00.000Z",
+    tags: ["contribution", "career", "personal_growth"],
+    text: "The most satisfying part of the day was helping someone turn a vague idea into a concrete solution. That's probably what I enjoy most about the work I do." },
+];
+
+/**
+ * Which seed the stored copy was written against.
+ *
+ * Bump this whenever SEED_REFLECTIONS changes. A saved copy replaces the seed
+ * key for key on load, so without a stamp to compare, new entries are visible
+ * only to someone who has never opened the page -- everyone else keeps the
+ * seed they first landed on, and the page looks like it ignored the change.
+ * Changing STORE_KEY does not cover it: that renames the browser's copy and
+ * leaves the account's, which is the durable one.
+ */
+const SEED_V = 2;
+
+/** The seeded entries, fanned out into the four records a real save writes. */
+function seedEdits() {
+  const e = emptyEdits();
+  e.seedV = SEED_V;
+  for (const r of SEED_REFLECTIONS) {
+    e.checkIns[r.date] = r.mood;
+    e.notes[r.date] = r.text;
+    e.tags[r.date] = [...r.tags];
+    e.log.push({ at: r.at, date: r.date, text: r.text, tags: [...r.tags], mood: r.mood });
+  }
+  return e;
+}
+
 function reset() {
   // A new session gets a newly generated sample, which is then frozen in turn.
   baseline = null;
   S = {
     name: 'Sasha',
-    edits: emptyEdits(),
+    edits: seedEdits(),
     goals: seedGoals(),
     timeBudgets: seedBudgets(),
     timeEntries: seedEntries(),
