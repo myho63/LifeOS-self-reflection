@@ -34,13 +34,12 @@ if (!template.includes(marker)) throw new Error(`index.html is missing ${marker}
 
 // `$` is special in String.replace patterns, and a minified bundle is full of
 // them. A function replacement passes the text through untouched.
-// Stamped so a page on screen can say which build it is. A viewer can serve a
-// cached copy, and without this there is no telling a fixed page from an old
-// one that looks identical.
-const stamp = new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC';
-const html = template
-  .replace(marker, () => code)
-  .replaceAll('__BUILD__', () => stamp);
+/* No build stamp. The dashboard showed one so a viewer could tell a cached
+   copy from a fixed one; nothing here displays it, and stamping the time
+   anyway made every rebuild a one-line diff — so a fresh clone went dirty the
+   moment anyone ran the build. The output is a pure function of the source
+   now, which is a more useful property for a repository people will clone. */
+const html = template.replace(marker, () => code);
 
 // Committed beside the source rather than written into dist/, which is
 // gitignored: the point of this file is that someone can clone the repo and
