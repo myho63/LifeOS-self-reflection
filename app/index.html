@@ -293,6 +293,9 @@
 
   /* ---------------------------------------------------------------- header */
   .top { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 4px; }
+  /* The greeting gives up width before it pushes the controls onto their own
+     row: a long subtitle should wrap to two lines, not break the band. */
+  .top > div:first-child { flex: 1 1 320px; min-width: 0; }
   .top h2 { font-size: 22px; letter-spacing: -0.028em; }
   .top .hi { color: var(--ink-mid); font-size: var(--fs-base); }
   .top .right { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -2069,12 +2072,14 @@
 
 <div class="app">
   <main class="main">
-    <!-- One page, so the header names it rather than greeting you. What used
-         to sit on the right — the level badge, notifications, the assistant —
-         belongs to the rest of LifeOS and is not part of this. -->
+    <!-- The greeting reads Pacific time and the date reads the viewer's own,
+         because this page is a link that gets sent: the time of day should be
+         the sender's, and the day should be the one the calendar below is
+         keyed to. The person and the assistant are fixed — see the note on
+         them further down. -->
     <header class="top">
       <div>
-        <h2>Self Reflection</h2>
+        <h2 id="greeting">Good evening, Sasha 👋</h2>
         <p class="hi">Tell LifeOS how the day went. It reads what you write and
           scores the rest from your own check-ins.</p>
       </div>
@@ -2085,6 +2090,30 @@
           </svg>
           <span><span id="date-long">—</span><br><span class="d2" id="date-dow">—</span></span>
         </div>
+        <!-- The person and the assistant are both fixed in this demo: there is
+             no account to open and no model behind the button. Both are marked
+             up as plain text rather than as buttons, because a control that
+             does nothing when pressed reads as broken rather than as absent.
+             The chevron is dropped with the button, for the same reason. -->
+        <div class="whoami-card">
+          <span class="avatar" id="avatar" aria-hidden="true">S</span>
+          <span class="t">
+            <span class="nm" id="who">Sasha</span>
+            <span class="lv" id="level-line">Established Builder</span>
+          </span>
+        </div>
+        <div class="bell" id="bell" role="status">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink-mid)" stroke-width="1.8" aria-hidden="true">
+            <path d="M18 8A6 6 0 1 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="badge" id="bell-count" hidden>0</span>
+        </div>
+        <div class="ask">
+          Ask LifeOS AI
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2l1.9 5.6L19.5 9.5 13.9 11.4 12 17l-1.9-5.6L4.5 9.5l5.6-1.9L12 2Z"/>
+          </svg>
+        </div>
       </div>
     </header>
 
@@ -2092,6 +2121,20 @@
     <!-- Only ever shown when a card threw. Silence there is what made a dead
          panel look like a locked one. -->
     <div id="render-error" class="banner" hidden></div>
+
+
+    <!-- The daily check-in. The only thing on this page that asks for
+         something rather than reporting something, and the source every panel
+         below it reads from: a tap here changes the calendar, the journey and
+         the impact table on the same render. -->
+    <section class="card checkin">
+      <div class="ci-copy">
+        <h2>How happy are you today?</h2>
+        <p class="sub" style="margin:2px 0 0" id="ci-sub">Your daily check-in helps LifeOS understand you better.</p>
+      </div>
+      <div class="faces" id="faces" role="radiogroup" aria-label="How happy are you today?"></div>
+      <p class="ci-hint" id="ci-hint">Tap one to check in.</p>
+    </section>
 
 
     <!-- ================================================ self reflection -->
@@ -3540,7 +3583,7 @@ function reset() {
   // A new session gets a newly generated sample, which is then frozen in turn.
   baseline = null;
   S = {
-    name: 'Katy',
+    name: 'Sasha',
     edits: emptyEdits(),
     goals: seedGoals(),
     timeBudgets: seedBudgets(),
@@ -3928,10 +3971,84 @@ function icon(path, size = 16) {
 }
 
 
-/** The date pill. The title beside it is static: there is one page. */
+/** The band across the top: greeting, date, who this is, and the bell. */
+/* The person in this demo is fixed. There is no account to sign into and no
+   model behind the Ask button, so both are written once from here and never
+   change: one place to read them from, and nothing that invites a press. */
+const DEMO_USER = { name: 'Sasha', level: 'Established Builder' };
+
+/* The greeting is pinned to Pacific time by request. This page is a link
+   someone sends, and "good evening" should read the same for whoever opens it
+   as it did for the person who shared it. The date beside it is deliberately
+   the viewer's own calendar day instead, because that is the day the check-in
+   below, the calendar and every panel on the page are keyed to. For a few
+   hours a day, outside the Pacific zone, the two name different days; the
+   date is the one that matches the rest of the page. */
+const PACIFIC_HOUR = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/Los_Angeles', hour: 'numeric', hour12: false,
+});
+
+/** Hour 0-23 on the US west coast right now. PST and PDT are handled for us. */
+function pacificHour() {
+  // Some engines render midnight as 24 rather than 0, and a bad time zone
+  // database would give us nothing at all; fall back to the viewer's clock
+  // rather than greeting them out of a NaN.
+  const h = Number(PACIFIC_HOUR.format(new Date()));
+  return Number.isFinite(h) ? h % 24 : new Date().getHours();
+}
+
 function renderHeader() {
+  const hour = pacificHour();
+  const part = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  $('#greeting').textContent = `${part}, ${DEMO_USER.name} \u{1F44B}`;
+  $('#who').textContent = DEMO_USER.name;
+  $('#avatar').textContent = DEMO_USER.name.slice(0, 1).toUpperCase();
+  $('#level-line').textContent = DEMO_USER.level;
+
   $('#date-long').textContent = NOW.toLocaleDateString(undefined, inUTC({ month: 'long', day: 'numeric', year: 'numeric' }));
   $('#date-dow').textContent = NOW.toLocaleDateString(undefined, inUTC({ weekday: 'long' }));
+
+  // The bell counts the one thing this page can actually be behind on, so the
+  // badge is never a number larger than what a tap below would clear.
+  const count = S.reflections.some((r) => r.date === TODAY) ? 0 : 1;
+  const bell = $('#bell-count');
+  bell.hidden = count === 0;
+  bell.textContent = String(count);
+  $('#bell').title = count ? 'Today is not checked in yet.' : 'Nothing is waiting on you.';
+}
+
+/**
+ * The five faces.
+ *
+ * This is the only control on the page that adds data rather than reading it,
+ * so it stays live: a tap writes today's check-in and every panel below
+ * re-reads from it on the same render.
+ */
+function renderCheckIn(d) {
+  const wrap = $('#faces');
+  wrap.textContent = '';
+  const todays = todaysFace();
+
+  for (const f of HAPPINESS_FACES) {
+    const b = el('button', 'face');
+    b.dataset.face = String(f.value);
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', String(todays !== undefined && todays.band === f.band));
+    const bubble = el('span', 'bubble', f.emoji);
+    bubble.style.background = `var(--m${f.band})`;
+    b.append(bubble, el('span', '', f.label));
+    wrap.append(b);
+  }
+
+  const hint = $('#ci-hint');
+  const sub = $('#ci-sub');
+  if (todays === undefined) {
+    hint.textContent = '\u21B3 Tap one to check in.';
+    sub.textContent = 'Your daily check-in helps LifeOS understand you better.';
+  } else {
+    hint.textContent = 'Checked in for today. Tap again to change it.';
+    sub.textContent = `${d.month.logged} of ${d.month.loggable} days logged in ${d.month.label.replace(/ \d{4}$/, '')}.`;
+  }
 }
 
 
@@ -6187,6 +6304,7 @@ function render() {
   if (!d) { renderBroken(failed); return; }
 
   draw(failed, 'the header', () => renderHeader());
+  draw(failed, 'the check-in', () => renderCheckIn(d));
   draw(failed, 'the calendar', () => renderCalendars(d));
   draw(failed, 'the support banner', () => renderSafety());
   draw(failed, 'your journey', () => renderJourney(d));
