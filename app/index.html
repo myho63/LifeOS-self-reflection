@@ -6333,10 +6333,22 @@ function workbook(rows, widths) {
  * would put a clock back into a question that has none — which is exactly how
  * a day ends up one off for anybody west of Greenwich.
  */
+/**
+ * The log in the window picked, newest check-in first.
+ *
+ * Sorted on the day and then the moment it was saved, rather than trusted to
+ * arrive in order: entries are appended as they are written, so a note saved
+ * this afternoon for a day that already has an evening entry would otherwise
+ * sit above it. The table, the workbook and the JSON copy all read this, so
+ * they agree on the order.
+ */
 function logInRange() {
   const from = S.logFrom;
   const to = S.logTo;
-  return (S.edits.log ?? []).filter((e) => (!from || e.date >= from) && (!to || e.date <= to));
+  const when = (e) => { const t = Date.parse(e.at); return Number.isNaN(t) ? 0 : t; };
+  return (S.edits.log ?? [])
+    .filter((e) => (!from || e.date >= from) && (!to || e.date <= to))
+    .sort((a, b) => b.date.localeCompare(a.date) || when(b) - when(a));
 }
 
 /**
@@ -6441,7 +6453,7 @@ async function exportReflog() {
   const rows = [[
     'Date', 'Time', 'Feeling', 'Reflection', 'Dimensions', 'Saved at (ISO)', 'Feeling (0-10)',
   ]];
-  for (const e of [...log].reverse()) {
+  for (const e of log) {
     const at = new Date(e.at);
     const ok = !Number.isNaN(at.getTime());
     const face = typeof e.mood === 'number' ? faceFor(e.mood) : undefined;
@@ -6726,7 +6738,7 @@ function renderReflog() {
   }
   empty?.remove();
 
-  for (const entry of [...log].reverse()) {
+  for (const entry of log) {
     const tr = el('tr');
     const day = el('td', 'when');
     day.textContent = dateOf(entry.date).toLocaleDateString(undefined,
