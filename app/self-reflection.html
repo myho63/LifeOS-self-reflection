@@ -3076,6 +3076,26 @@ const MAYA_SIGNALS = {
   healthStatus: 'steady',
 };
 
+/* Jordan Rivera, from his persona: 39, a full-time professional, married
+   with two children, helping an aging parent, with significant financial
+   responsibilities. The children's ages are not on the persona; twelve and
+   eight stand in for "the youngest" still needing homework help and a
+   daughter at school. A mortgage and sixteen years of work stand in for the
+   rest of a settled late-thirties life; both are stated, not read. */
+const JORDAN_SIGNALS = {
+  ageYears: 39,
+  employmentStatus: 'employed',
+  relationshipStatus: 'married',
+  livingArrangement: 'with_own_family',
+  children: [{ ageYears: 12, dependent: true }, { ageYears: 8, dependent: true }],
+  caringForDependentAdult: true,
+  careerIntent: 'settled',
+  yearsOfWorkExperience: 16,
+  housingTenure: 'mortgaged',
+  financialDependents: 2,
+  healthStatus: 'steady',
+};
+
 const SEED_RATINGS = {
   health: 7, personal_growth: 6, career: 6, finance: 4, relationships: 6,
   family: 7, fun: 4, contribution: 3, environment: 6, social: 5, spirituality: 4,
@@ -3299,7 +3319,7 @@ let personaId = (() => {
    record, so their log is exactly what it was before profiles existed. Each
    own record is saved under its own key, so a check-in made as Sofia never
    lands in anyone else's log. */
-const OWN_RECORDS = new Set(['sofia', 'elena', 'maya']);
+const OWN_RECORDS = new Set(['sofia', 'elena', 'maya', 'jordan']);
 const recordOwner = () => (OWN_RECORDS.has(personaId) ? personaId : '');
 const editsKey = () => (recordOwner() ? `${STORE_KEY}.${recordOwner()}` : STORE_KEY);
 const editsDoc = () => (recordOwner() ? `state/edits-${recordOwner()}` : 'state/edits');
@@ -4075,6 +4095,84 @@ const MAYA_MONTHS = {
   '2026-08': '9759..5.77777957759.3377..79157',
 };
 
+/**
+ * Jordan Rivera's own reflections, from the Jordan persona log.
+ *
+ * Same treatment as the other profiles with a record of their own: switching
+ * to him swaps the log, the calendar, the journal and the impact table
+ * together. Times are the Pacific evening each was written, stored in UTC.
+ * Faces: Very happy 9, Happy 7, Neutral 5, Unhappy 3.
+ */
+const JORDAN_REFLECTIONS = [
+  { date: "2026-09-01", mood: 7, at: "2026-09-02T02:42:00.000Z",
+    tags: ["family", "relationships"],
+    text: "We had dinner together as a family tonight and everyone actually sat at the table. It was a simple evening, but I really enjoyed it." },
+  { date: "2026-09-02", mood: 5, at: "2026-09-03T04:18:00.000Z",
+    tags: ["career", "family", "health"],
+    text: "I had a long day at work and then helped my dad with a few things. I got everything done, but there wasn't really any time left for myself." },
+  { date: "2026-09-04", mood: 7, at: "2026-09-05T01:53:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "I finished an important project at work today. I'm proud of how it turned out, especially because I've been juggling so many things lately." },
+  { date: "2026-09-05", mood: 3, at: "2026-09-06T05:07:00.000Z",
+    tags: ["family", "career", "relationships"],
+    text: "My youngest needed help with homework while I was still answering work messages. I don't like feeling like I'm physically there but mentally somewhere else." },
+  { date: "2026-09-07", mood: 5, at: "2026-09-08T03:26:00.000Z",
+    tags: ["health", "family"],
+    text: "I planned to go for a run after work, but my dad had an appointment and needed a ride. I know it was important, but I really need to find a better way to make time for my health." },
+  { date: "2026-09-09", mood: 7, at: "2026-09-10T02:14:00.000Z",
+    tags: ["relationships", "family"],
+    text: "My wife and I finally had some time alone after the kids went to bed. We talked about things other than schedules and responsibilities, which felt really good." },
+  { date: "2026-09-11", mood: 3, at: "2026-09-12T04:36:00.000Z",
+    tags: ["career", "family", "health"],
+    text: "I feel like everyone needs something from me this week. Work needs me, the kids need me, and my dad needs help. I know these things matter, but I'm exhausted." },
+  { date: "2026-09-13", mood: 9, at: "2026-09-13T23:41:00.000Z",
+    tags: ["family", "health", "fun"],
+    text: "We took the kids hiking today. I almost didn't go because I had work I could have done, but I'm glad I chose to be present with them." },
+  { date: "2026-09-15", mood: 5, at: "2026-09-16T03:52:00.000Z",
+    tags: ["finance", "family"],
+    text: "I looked at our finances tonight. We're doing okay, but with the kids getting older and helping my dad, I want to make sure we're prepared for the next few years." },
+  { date: "2026-09-17", mood: 7, at: "2026-09-18T01:37:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "I had a good conversation with my manager today about delegating more. I realized I don't have to personally handle everything at work." },
+  { date: "2026-09-19", mood: 3, at: "2026-09-20T05:14:00.000Z",
+    tags: ["health", "family", "career"],
+    text: "I haven't exercised properly in almost two weeks. Every time I have some free time, something else seems more urgent." },
+  { date: "2026-09-21", mood: 7, at: "2026-09-22T02:29:00.000Z",
+    tags: ["family", "career"],
+    text: "My daughter had a school event tonight. I almost skipped it because of a deadline, but I moved a few things around and was able to be there. I'm really glad I did." },
+  { date: "2026-09-23", mood: 5, at: "2026-09-24T03:43:00.000Z",
+    tags: ["career", "family", "personal_growth"],
+    text: "I've been thinking about whether I'm spending my time the way I actually want to. I'm proud of my career, but I don't want work to take over everything else." },
+  { date: "2026-09-25", mood: 9, at: "2026-09-26T01:18:00.000Z",
+    tags: ["family", "fun", "relationships"],
+    text: "We had a relaxed family evening with no plans. We ordered dinner, watched a movie, and nobody had anywhere else to be. I wish we could have more evenings like this." },
+  { date: "2026-09-26", mood: 3, at: "2026-09-27T04:02:00.000Z",
+    tags: ["family", "health", "relationships"],
+    text: "My dad's health situation has been on my mind. I want to be there for him, but I'm also worried about how much responsibility I'll need to take on in the future." },
+  { date: "2026-09-27", mood: 7, at: "2026-09-28T03:47:00.000Z",
+    tags: ["career", "family", "personal_growth", "health"],
+    text: "I've been thinking about what I want the next few years to look like. I don't necessarily want a bigger job. I want to keep doing meaningful work while having enough time and energy for my family and myself." },
+];
+
+/**
+ * Jordan's check-ins before his written log: January to August 2026.
+ *
+ * Dummy data, drawn once from a seeded shuffle and written down, so it reads
+ * the same on every visit. Weighted toward Happy and Neutral with a steady
+ * share of hard days -- stretched between work, his children and his father,
+ * but not unhappy with his life. Same encoding as SOFIA_MONTHS.
+ */
+const JORDAN_MONTHS = {
+  '2026-01': '.595979.7339.55.3..7757977557.7',
+  '2026-02': '3997.5575719.77.77..7..53757',
+  '2026-03': '.....193..77557.7577775555.777.',
+  '2026-04': '9797977175.777.97.75753..57.9.',
+  '2026-05': '5.777..7.7.5.73577..7..77.753.5',
+  '2026-06': '3.93.1993.79.777.79777.757.933',
+  '2026-07': '...75775777...375.5553597757979',
+  '2026-08': '.7.75.77.37759933.9.9.9..9537..',
+};
+
 /** A profile's months as check-in rows, the shape the sample history takes. */
 function monthsToRows(months) {
   const rows = [];
@@ -4090,6 +4188,267 @@ function monthsToRows(months) {
   }
   return rows;
 }
+
+/**
+ * The reading of Jordan's sixteen days, made the same way as the other profiles:
+ * written from exactly his entries in the reply format the panel asks Claude
+ * for, then passed through this page's grounding, so every quote is his word
+ * for word and dated from his log.
+ */
+const JORDAN_INSIGHTS = {
+  v: 5,
+  key: "1trgy4l",
+  at: "2026-09-28T03:55:00.000Z",
+  days: 16,
+  summary: "Your best days are the ones where you chose to be fully present with your family, while the hardest ones come from being pulled between work, the kids and your dad with nothing left over for your own health.",
+  items: [
+    {
+      dimension: "health",
+      verdict: "attention",
+      headline: "Your own health keeps getting pushed to the back",
+      detail: "Exercise and time for yourself keep losing out to whatever feels more urgent, and your unhappy days describe being worn out by everyone needing something at once.",
+      common: "your own health losing out to everyone else's needs",
+      excerpts: [
+        {
+          date: "2026-09-19",
+          text: "Every time I have some free time, something else seems more urgent"
+        },
+        {
+          date: "2026-09-19",
+          text: "I haven't exercised properly in almost two weeks"
+        },
+        {
+          date: "2026-09-11",
+          text: "I know these things matter, but I'm exhausted"
+        },
+        {
+          date: "2026-09-07",
+          text: "I really need to find a better way to make time for my health"
+        },
+        {
+          date: "2026-09-02",
+          text: "there wasn't really any time left for myself"
+        }
+      ],
+      ideas: [
+        "Try putting a short run in the calendar like any other appointment",
+        "Look for exercise you can share, like the family hike",
+        "Ask whether someone else could cover one of your dad's appointments"
+      ]
+    },
+    {
+      dimension: "family",
+      verdict: "working",
+      headline: "Choosing to be present is paying off",
+      detail: "Your happiest days are the ones where you set work aside to be with your family, like the hike, the school event and an evening with no plans.",
+      common: "choosing to be present with your family",
+      excerpts: [
+        {
+          date: "2026-09-25",
+          text: "nobody had anywhere else to be. I wish we could have more evenings like this"
+        },
+        {
+          date: "2026-09-21",
+          text: "I moved a few things around and was able to be there. I'm really glad I did"
+        },
+        {
+          date: "2026-09-13",
+          text: "I'm glad I chose to be present with them"
+        },
+        {
+          date: "2026-09-01",
+          text: "everyone actually sat at the table"
+        }
+      ],
+      ideas: [
+        "Keep one evening a week with no plans for the whole family",
+        "Notice how often moving a deadline was possible after all",
+        "Put the phone away at dinner, the way that first evening felt"
+      ]
+    },
+    {
+      dimension: "career",
+      verdict: "working",
+      headline: "Letting go of doing everything yourself is helping",
+      detail: "Delegating and finishing a big project left you proud rather than stretched, and you are starting to ask how much room work should really take.",
+      common: "rethinking how much of your time work should take",
+      excerpts: [
+        {
+          date: "2026-09-27",
+          text: "I don't necessarily want a bigger job"
+        },
+        {
+          date: "2026-09-23",
+          text: "I'm proud of my career, but I don't want work to take over everything else"
+        },
+        {
+          date: "2026-09-17",
+          text: "I realized I don't have to personally handle everything at work"
+        }
+      ],
+      ideas: [
+        "Pick one more task to hand over this month",
+        "Decide on a time after which work messages wait until morning",
+        "Write down what meaningful work looks like without a bigger title"
+      ]
+    },
+    {
+      dimension: "finance",
+      verdict: "pattern",
+      headline: "The years ahead with your dad and the kids are on your mind",
+      detail: "You keep thinking ahead to what the kids growing up and your dad's health will ask of you, and wanting to be ready for it.",
+      common: "preparing for more responsibility in the years ahead",
+      excerpts: [
+        {
+          date: "2026-09-26",
+          text: "I'm also worried about how much responsibility I'll need to take on in the future"
+        },
+        {
+          date: "2026-09-15",
+          text: "I want to make sure we're prepared for the next few years"
+        }
+      ],
+      ideas: [
+        "Talk with your wife about what the next few years might ask of you both",
+        "Find out what support is available for your dad before it is urgent",
+        "Set aside a little each month for the costs you can see coming"
+      ]
+    }
+  ],
+  attributions: [
+    {
+      date: "2026-09-01",
+      dimensions: [
+        "family",
+        "relationships"
+      ]
+    },
+    {
+      date: "2026-09-02",
+      dimensions: [
+        "career",
+        "family",
+        "health"
+      ]
+    },
+    {
+      date: "2026-09-04",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-05",
+      dimensions: [
+        "family",
+        "career",
+        "relationships"
+      ]
+    },
+    {
+      date: "2026-09-07",
+      dimensions: [
+        "health",
+        "family"
+      ]
+    },
+    {
+      date: "2026-09-09",
+      dimensions: [
+        "relationships",
+        "family"
+      ]
+    },
+    {
+      date: "2026-09-11",
+      dimensions: [
+        "career",
+        "family",
+        "health"
+      ]
+    },
+    {
+      date: "2026-09-13",
+      dimensions: [
+        "family",
+        "health",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-15",
+      dimensions: [
+        "finance",
+        "family"
+      ]
+    },
+    {
+      date: "2026-09-17",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-19",
+      dimensions: [
+        "health",
+        "family",
+        "career"
+      ]
+    },
+    {
+      date: "2026-09-21",
+      dimensions: [
+        "family",
+        "career"
+      ]
+    },
+    {
+      date: "2026-09-23",
+      dimensions: [
+        "career",
+        "family",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-25",
+      dimensions: [
+        "family",
+        "fun",
+        "relationships"
+      ]
+    },
+    {
+      date: "2026-09-26",
+      dimensions: [
+        "family",
+        "health",
+        "relationships"
+      ]
+    },
+    {
+      date: "2026-09-27",
+      dimensions: [
+        "career",
+        "family",
+        "personal_growth",
+        "health"
+      ]
+    }
+  ],
+  notes: {
+    family: "being fully present with the kids is what your best days are made of",
+    health: "exercise and rest keep losing out to whatever feels more urgent",
+    career: "you are proud of your work and rethinking how much room it should take",
+    relationships: "time alone with your wife and worry for your dad both weigh on you",
+    finance: "you are thinking ahead about the kids and your dad's needs",
+    personal_growth: "delegating is teaching you that you do not have to carry everything",
+    fun: "unplanned time together is what you wish there were more of"
+  }
+};
 
 /**
  * The reading of Maya's sixteen days, made the same way as Sofia's and Elena's:
@@ -5157,6 +5516,8 @@ const SOFIA_PRIORITIES = ['personal_growth', 'social', 'health', 'career'];
 const ELENA_PRIORITIES = ['finance', 'career', 'health'];
 /* Maya's, from "What matters right now" on her persona, in its order. */
 const MAYA_PRIORITIES = ['career', 'personal_growth', 'finance'];
+/* Jordan's, from "What matters right now" on his persona, in its order. */
+const JORDAN_PRIORITIES = ['family', 'health', 'career'];
 
 /**
  * Everything a profile with its own record brings with it, by profile id.
@@ -5174,6 +5535,10 @@ const OWN = {
   maya: {
     signals: MAYA_SIGNALS, priorities: MAYA_PRIORITIES, reflections: MAYA_REFLECTIONS,
     insights: MAYA_INSIGHTS, history: monthsToRows(MAYA_MONTHS),
+  },
+  jordan: {
+    signals: JORDAN_SIGNALS, priorities: JORDAN_PRIORITIES, reflections: JORDAN_REFLECTIONS,
+    insights: JORDAN_INSIGHTS, history: monthsToRows(JORDAN_MONTHS),
   },
 };
 const own = () => OWN[recordOwner()];
