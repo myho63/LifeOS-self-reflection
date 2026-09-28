@@ -3115,6 +3115,26 @@ const AMARA_SIGNALS = {
   healthStatus: 'steady',
 };
 
+/* Leo Nakamura, from his persona: 55, an established career, married,
+   children independent, financially stable, with more free time than
+   before. His log has a son with his own apartment and a daughter asking
+   for advice about her work, so twenty-seven and twenty-four stand in for
+   their ages; neither lives at home. Thirty-two years of work, a home owned
+   outright and an emergency fund follow "established" and "financially
+   stable"; "not chasing promotions" is settled rather than restless. */
+const LEO_SIGNALS = {
+  ageYears: 55,
+  employmentStatus: 'employed',
+  relationshipStatus: 'married',
+  livingArrangement: 'with_partner',
+  children: [{ ageYears: 27, dependent: false }, { ageYears: 24, dependent: false }],
+  careerIntent: 'settled',
+  yearsOfWorkExperience: 32,
+  housingTenure: 'owned_outright',
+  hasEmergencyFund: true,
+  healthStatus: 'steady',
+};
+
 const SEED_RATINGS = {
   health: 7, personal_growth: 6, career: 6, finance: 4, relationships: 6,
   family: 7, fun: 4, contribution: 3, environment: 6, social: 5, spirituality: 4,
@@ -3338,7 +3358,7 @@ let personaId = (() => {
    record, so their log is exactly what it was before profiles existed. Each
    own record is saved under its own key, so a check-in made as Sofia never
    lands in anyone else's log. */
-const OWN_RECORDS = new Set(['sofia', 'elena', 'maya', 'jordan', 'amara']);
+const OWN_RECORDS = new Set(['sofia', 'elena', 'maya', 'jordan', 'amara', 'leo']);
 const recordOwner = () => (OWN_RECORDS.has(personaId) ? personaId : '');
 const editsKey = () => (recordOwner() ? `${STORE_KEY}.${recordOwner()}` : STORE_KEY);
 const editsDoc = () => (recordOwner() ? `state/edits-${recordOwner()}` : 'state/edits');
@@ -4270,6 +4290,84 @@ const AMARA_MONTHS = {
   '2026-08': '9.7.957.737939.979.95797577.755',
 };
 
+/**
+ * Leo Nakamura's own reflections, from the Leo persona log.
+ *
+ * Same treatment as the other profiles with a record of their own: switching
+ * to him swaps the log, the calendar, the journal and the impact table
+ * together. Times are the Pacific evening each was written, stored in UTC.
+ * Faces: Very happy 9, Happy 7, Neutral 5, Unhappy 3.
+ */
+const LEO_REFLECTIONS = [
+  { date: "2026-09-01", mood: 7, at: "2026-09-02T02:26:00.000Z",
+    tags: ["relationships", "fun"],
+    text: "My wife and I had dinner together and realized we haven't had this much uninterrupted time together in years. It's strange having the house so quiet, but I'm starting to enjoy it." },
+  { date: "2026-09-02", mood: 5, at: "2026-09-03T03:41:00.000Z",
+    tags: ["career", "fun", "personal_growth"],
+    text: "I finished work early today and suddenly realized I didn't have anywhere I needed to be. I had forgotten what that felt like." },
+  { date: "2026-09-04", mood: 9, at: "2026-09-05T01:18:00.000Z",
+    tags: ["personal_growth", "fun"],
+    text: "I signed up for a photography class. I've always wanted to learn photography but never felt like I had the time. I'm excited to be a beginner at something again." },
+  { date: "2026-09-06", mood: 7, at: "2026-09-07T04:03:00.000Z",
+    tags: ["family", "relationships", "personal_growth"],
+    text: "My son called tonight and told me about his new apartment. I'm proud of him. I also realized our relationship feels different now that he doesn't need me to solve everything for him." },
+  { date: "2026-09-08", mood: 5, at: "2026-09-09T03:37:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "Work is going well, but I've been asking myself how much longer I want to make career advancement my main focus. I don't feel ready to retire, but I don't think I want to keep chasing promotions either." },
+  { date: "2026-09-10", mood: 9, at: "2026-09-11T00:42:00.000Z",
+    tags: ["relationships", "fun"],
+    text: "My wife and I took a spontaneous day trip. We didn't have to plan around the kids or rush home. It felt like we were discovering a different version of our life together." },
+  { date: "2026-09-12", mood: 7, at: "2026-09-13T02:54:00.000Z",
+    tags: ["contribution", "social", "personal_growth"],
+    text: "I volunteered at a local community event today. I liked being useful without having to worry about whether it would help my career." },
+  { date: "2026-09-14", mood: 3, at: "2026-09-15T04:16:00.000Z",
+    tags: ["personal_growth", "fun"],
+    text: "I had a quiet evening and realized I don't have many activities that are really mine. For so many years my free time was organized around work and family. I'm not sure what I want to replace that with yet." },
+  { date: "2026-09-16", mood: 7, at: "2026-09-17T01:29:00.000Z",
+    tags: ["personal_growth", "fun"],
+    text: "I spent the afternoon learning photography. I'm still terrible at it, but I'm enjoying the process. It's nice doing something where I don't have to be good at it." },
+  { date: "2026-09-18", mood: 7, at: "2026-09-19T03:48:00.000Z",
+    tags: ["family", "relationships"],
+    text: "My daughter called to ask for advice about something at work. I liked being able to help without trying to tell her what to do. I think our relationship is becoming more like a friendship." },
+  { date: "2026-09-20", mood: 5, at: "2026-09-21T05:02:00.000Z",
+    tags: ["finance", "personal_growth", "contribution"],
+    text: "I've started thinking more seriously about what I want the next ten years to look like. Financially we're in good shape, so maybe the question isn't what I can afford to do, but what is actually worth doing." },
+  { date: "2026-09-22", mood: 9, at: "2026-09-23T02:15:00.000Z",
+    tags: ["social", "health", "fun"],
+    text: "I joined a hiking group today. I almost didn't go because I didn't know anyone, but everyone was welcoming. I realized I need to make an effort to build a social life outside of work and family." },
+  { date: "2026-09-24", mood: 7, at: "2026-09-25T03:53:00.000Z",
+    tags: ["relationships", "fun"],
+    text: "I had a really good conversation with my wife about traveling more. We both realized we've spent years saying \"maybe someday.\" Maybe someday can actually be now." },
+  { date: "2026-09-25", mood: 5, at: "2026-09-26T04:31:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "Work was busy today and I found myself slipping back into the old habit of making work the center of everything. I don't think that's what I want anymore." },
+  { date: "2026-09-26", mood: 7, at: "2026-09-27T01:47:00.000Z",
+    tags: ["contribution", "personal_growth", "social"],
+    text: "I spent the afternoon helping at the community center. It felt good to use some of the skills I've built over my career for something that isn't about my job." },
+  { date: "2026-09-27", mood: 9, at: "2026-09-28T03:24:00.000Z",
+    tags: ["personal_growth", "fun", "relationships", "contribution"],
+    text: "I'm starting to realize that having more free time isn't the problem. I need to be intentional about what I fill it with. I want this next chapter to include learning, travel, community and more time with my wife." },
+];
+
+/**
+ * Leo's check-ins before his written log: January to August 2026.
+ *
+ * Dummy data, drawn once from a seeded shuffle and written down, so it reads
+ * the same on every visit. Mostly Happy with few hard days -- settled and
+ * financially steady, adjusting to more time rather than too little.
+ * Same encoding as SOFIA_MONTHS.
+ */
+const LEO_MONTHS = {
+  '2026-01': '.17.77755.97.777..75757995.9995',
+  '2026-02': '..7.77.95755.779.57777.77.3.',
+  '2026-03': '775.7535.777.95..55957959777.77',
+  '2026-04': '377.977557757773..795939.779.5',
+  '2026-05': '7.9959.57795.799.755..577575799',
+  '2026-06': '5...9.977579..799777...757.75.',
+  '2026-07': '7757.7577553..795.737.99.57.957',
+  '2026-08': '995537.5.55775.77....77399..597',
+};
+
 /** A profile's months as check-in rows, the shape the sample history takes. */
 function monthsToRows(months) {
   const rows = [];
@@ -4285,6 +4383,263 @@ function monthsToRows(months) {
   }
   return rows;
 }
+
+/**
+ * The reading of Leo's sixteen days, made the same way as the other profiles:
+ * written from exactly his entries in the reply format the panel asks Claude
+ * for, then passed through this page's grounding, so every quote is his word
+ * for word and dated from his log.
+ */
+const LEO_INSIGHTS = {
+  v: 5,
+  key: "1ogutdm",
+  at: "2026-09-28T03:35:00.000Z",
+  days: 16,
+  summary: "You seem happiest learning something new, helping your community and spending unhurried time with your wife, while the evenings that feel empty show you are still working out what this new free time is for.",
+  items: [
+    {
+      dimension: "fun",
+      verdict: "pattern",
+      headline: "Free time is new, and you are still deciding what fills it",
+      detail: "Your one unhappy day, and a quieter one before it, came from open time with nothing of your own to fill it. You are starting to say it needs to be chosen, not waited out.",
+      common: "open time that nothing of your own fills yet",
+      excerpts: [
+        {
+          date: "2026-09-27",
+          text: "having more free time isn't the problem. I need to be intentional about what I fill it with"
+        },
+        {
+          date: "2026-09-14",
+          text: "realized I don't have many activities that are really mine"
+        },
+        {
+          date: "2026-09-14",
+          text: "I'm not sure what I want to replace that with yet"
+        },
+        {
+          date: "2026-09-02",
+          text: "suddenly realized I didn't have anywhere I needed to be"
+        }
+      ],
+      ideas: [
+        "Write down a few things you have always meant to try, and pick one a month",
+        "Give the quiet evenings a regular plan, like photography practice or the hiking group",
+        "Notice which activities you look forward to, and do more of those"
+      ]
+    },
+    {
+      dimension: "personal_growth",
+      verdict: "working",
+      headline: "Being a beginner again is giving you energy",
+      detail: "Your photography class shows up on some of your best days, and part of the pleasure is not having to be good at it yet.",
+      common: "learning something new with no pressure to be good at it",
+      excerpts: [
+        {
+          date: "2026-09-16",
+          text: "It's nice doing something where I don't have to be good at it"
+        },
+        {
+          date: "2026-09-16",
+          text: "I'm still terrible at it, but I'm enjoying the process"
+        },
+        {
+          date: "2026-09-04",
+          text: "I'm excited to be a beginner at something again"
+        }
+      ],
+      ideas: [
+        "Take your camera on the next hike or day trip",
+        "Look for a second thing to learn once photography feels settled",
+        "Keep a few early photos to look back on later"
+      ]
+    },
+    {
+      dimension: "relationships",
+      verdict: "working",
+      headline: "Time with your wife feels like a new chapter together",
+      detail: "With the house quieter, your happiest entries are unhurried time with your wife, and plans you had been putting off for years.",
+      common: "rediscovering time together with your wife",
+      excerpts: [
+        {
+          date: "2026-09-24",
+          text: "Maybe someday can actually be now"
+        },
+        {
+          date: "2026-09-10",
+          text: "It felt like we were discovering a different version of our life together"
+        },
+        {
+          date: "2026-09-01",
+          text: "we haven't had this much uninterrupted time together in years"
+        }
+      ],
+      ideas: [
+        "Book one of the trips you have been saying maybe someday about",
+        "Keep a regular spontaneous day out together",
+        "Plan something new that neither of you has done before"
+      ]
+    },
+    {
+      dimension: "contribution",
+      verdict: "working",
+      headline: "Using your skills for your community feels good",
+      detail: "Volunteering and helping at the community center give you a kind of satisfaction your job no longer does, and it is shaping what you think is worth doing next.",
+      common: "being useful outside your job",
+      excerpts: [
+        {
+          date: "2026-09-26",
+          text: "It felt good to use some of the skills I've built over my career for something that isn't about my job"
+        },
+        {
+          date: "2026-09-20",
+          text: "maybe the question isn't what I can afford to do, but what is actually worth doing"
+        },
+        {
+          date: "2026-09-12",
+          text: "I liked being useful without having to worry about whether it would help my career"
+        }
+      ],
+      ideas: [
+        "Ask the community center whether there is a regular role you could take on",
+        "List the skills from your career you would most like to pass on",
+        "Try volunteering somewhere new to see what else fits"
+      ]
+    }
+  ],
+  attributions: [
+    {
+      date: "2026-09-01",
+      dimensions: [
+        "relationships",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-02",
+      dimensions: [
+        "career",
+        "fun",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-04",
+      dimensions: [
+        "personal_growth",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-06",
+      dimensions: [
+        "family",
+        "relationships",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-08",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-10",
+      dimensions: [
+        "relationships",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-12",
+      dimensions: [
+        "contribution",
+        "social",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-14",
+      dimensions: [
+        "personal_growth",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-16",
+      dimensions: [
+        "personal_growth",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-18",
+      dimensions: [
+        "family",
+        "relationships"
+      ]
+    },
+    {
+      date: "2026-09-20",
+      dimensions: [
+        "finance",
+        "personal_growth",
+        "contribution"
+      ]
+    },
+    {
+      date: "2026-09-22",
+      dimensions: [
+        "social",
+        "health",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-24",
+      dimensions: [
+        "relationships",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-25",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-26",
+      dimensions: [
+        "contribution",
+        "personal_growth",
+        "social"
+      ]
+    },
+    {
+      date: "2026-09-27",
+      dimensions: [
+        "personal_growth",
+        "fun",
+        "relationships",
+        "contribution"
+      ]
+    }
+  ],
+  notes: {
+    fun: "free time is new, and you are still deciding what should fill it",
+    personal_growth: "being a beginner again is giving you energy",
+    relationships: "time alone with your wife feels like a new chapter together",
+    contribution: "using your skills for your community feels good in a way work no longer does",
+    career: "work keeps pulling back to the center, and you are not sure you want it there",
+    family: "your relationship with your grown children is turning into friendship",
+    social: "you are starting to build a social life outside work and family",
+    finance: "being secure is turning the question from what you can afford to what is worth doing",
+    health: "the hiking group gave you exercise and company at once"
+  }
+};
 
 /**
  * The reading of Amara's sixteen days, made the same way as the other profiles:
@@ -5892,6 +6247,8 @@ const MAYA_PRIORITIES = ['career', 'personal_growth', 'finance'];
 const JORDAN_PRIORITIES = ['family', 'health', 'career'];
 /* Amara's, from "What matters right now" on her persona, in its order. */
 const AMARA_PRIORITIES = ['personal_growth', 'contribution', 'relationships'];
+/* Leo's, from "What matters right now" on his persona, in its order. */
+const LEO_PRIORITIES = ['personal_growth', 'fun', 'contribution'];
 
 /**
  * Everything a profile with its own record brings with it, by profile id.
@@ -5917,6 +6274,10 @@ const OWN = {
   amara: {
     signals: AMARA_SIGNALS, priorities: AMARA_PRIORITIES, reflections: AMARA_REFLECTIONS,
     insights: AMARA_INSIGHTS, history: monthsToRows(AMARA_MONTHS),
+  },
+  leo: {
+    signals: LEO_SIGNALS, priorities: LEO_PRIORITIES, reflections: LEO_REFLECTIONS,
+    insights: LEO_INSIGHTS, history: monthsToRows(LEO_MONTHS),
   },
 };
 const own = () => OWN[recordOwner()];
