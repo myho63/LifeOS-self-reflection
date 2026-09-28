@@ -678,6 +678,22 @@
   .whoami-card .lv { font-size: var(--fs-sm); color: var(--ink-soft); white-space: nowrap; }
   .whoami-card .chev { color: var(--ink-soft); font-size: 17px; line-height: 1; }
   .whoami-card:hover { border-color: var(--border-firm); }
+  button.whoami-card { height: 100%; }
+
+  /* The profile picker borrows the window menu's look, so the page has one
+     kind of dropdown. Wider, because each row carries a name, an age and a
+     stage rather than one short label. */
+  .who-pick { position: relative; }
+  .rfl-menu.who-menu { min-width: 270px; z-index: 12; }
+  .who-menu button { align-items: center; padding: 6px 9px; }
+  .who-menu .avatar { width: 26px; height: 26px; flex-basis: 26px; font-size: var(--fs-xs); }
+  .who-menu .t { display: grid; line-height: 1.25; min-width: 0; }
+  .who-menu .nm { font-weight: 700; color: var(--ink); }
+  .who-menu .lv { font-size: var(--fs-xs); color: var(--ink-soft); }
+  .who-menu .age { margin-left: auto; font-size: var(--fs-xs); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .who-menu button[aria-checked="true"] { background: var(--accent-soft); }
+  .who-menu button[aria-checked="true"] .nm { color: var(--accent-ink); }
+  .who-menu .foot-note { padding: 6px 9px 3px; font-size: var(--fs-2xs); color: var(--ink-soft); border-top: 1px solid var(--border); margin-top: 3px; }
 
   /* --------------------------------------------------------- the check-in */
   .checkin {
@@ -2064,7 +2080,7 @@
          them further down. -->
     <header class="top">
       <div>
-        <h2 id="greeting">Good evening, Sasha 👋</h2>
+        <h2 id="greeting">Good evening, Sofia 👋</h2>
         <p class="hi">Tell LifeOS how the day went. It reads what you write and
           scores the rest from your own check-ins.</p>
       </div>
@@ -2075,17 +2091,22 @@
           </svg>
           <span><span id="date-long">—</span><br><span class="d2" id="date-dow">—</span></span>
         </div>
-        <!-- The person and the assistant are both fixed in this demo: there is
-             no account to open and no model behind the button. Both are marked
-             up as plain text rather than as buttons, because a control that
-             does nothing when pressed reads as broken rather than as absent.
-             The chevron is dropped with the button, for the same reason. -->
-        <div class="whoami-card">
-          <span class="avatar" id="avatar" aria-hidden="true">S</span>
-          <span class="t">
-            <span class="nm" id="who">Sasha</span>
-            <span class="lv" id="level-line">Established Builder</span>
-          </span>
+        <!-- The person is picked from the fictional demo profiles, so it is a
+             real button with a chevron: pressing it does something. The
+             assistant is still fixed — there is no model behind it — and stays
+             plain text, because a control that does nothing when pressed reads
+             as broken rather than as absent. -->
+        <div class="who-pick">
+          <button type="button" class="whoami-card" id="who-btn"
+                  aria-haspopup="menu" aria-expanded="false" aria-controls="who-menu">
+            <span class="avatar" id="avatar" aria-hidden="true">S</span>
+            <span class="t">
+              <span class="nm" id="who">Sofia Nguyen</span>
+              <span class="lv" id="level-line">Teen &amp; Future Explorer</span>
+            </span>
+            <span class="chev" aria-hidden="true">⌄</span>
+          </button>
+          <div class="rfl-menu who-menu" id="who-menu" role="menu" aria-label="Demo profile" hidden></div>
         </div>
         <div class="bell" id="bell" role="status">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink-mid)" stroke-width="1.8" aria-hidden="true">
@@ -4300,10 +4321,68 @@ function icon(path, size = 16) {
 
 
 /** The band across the top: greeting, date, who this is, and the bell. */
-/* The person in this demo is fixed. There is no account to sign into and no
-   model behind the Ask button, so both are written once from here and never
-   change: one place to read them from, and nothing that invites a press. */
-const DEMO_USER = { name: 'Sasha', level: 'Established Builder' };
+/* The fictional demo profiles the header can switch between. There is no
+   account to sign into: picking one changes who the page greets and the life
+   stage it names, and nothing else — the check-ins below are the same sample
+   for all of them. The stage is the suggested label for each profile, written
+   here rather than derived, because these people exist only as sample data. */
+const DEMO_USERS = [
+  { id: 'sofia',  name: 'Sofia Nguyen',   age: 17, level: 'Teen & Future Explorer' },
+  { id: 'elena',  name: 'Elena Martinez', age: 23, level: 'Young Parent & Builder' },
+  { id: 'maya',   name: 'Maya Chen',      age: 27, level: 'Emerging Professional' },
+  { id: 'jordan', name: 'Jordan Rivera',  age: 39, level: 'Midlife Balancer' },
+  { id: 'amara',  name: 'Amara Okafor',   age: 46, level: 'Midlife Reassessment' },
+  { id: 'leo',    name: 'Leo Nakamura',   age: 55, level: 'Next Chapter Explorer' },
+  { id: 'david',  name: 'David Laurent',  age: 68, level: 'Retirement Transition' },
+  { id: 'evelyn', name: 'Evelyn Brooks',  age: 76, level: 'Purposeful Later Life' },
+];
+const PERSONA_KEY = 'lifeos.demo.persona';
+
+/* Remembered per browser, as a convenience only: a blocked store just means
+   the page opens on the first profile. */
+let personaId = (() => {
+  try { return localStorage.getItem(PERSONA_KEY) || ''; } catch { return ''; }
+})();
+let whoMenuOpen = false;
+
+function currentUser() {
+  return DEMO_USERS.find((u) => u.id === personaId) ?? DEMO_USERS[0];
+}
+
+/** First name for the greeting, initials for the avatar. */
+const firstName = (u) => u.name.split(' ')[0];
+const initials = (u) => u.name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+
+function choosePersona(id) {
+  personaId = id;
+  try { localStorage.setItem(PERSONA_KEY, id); } catch { /* sandboxed */ }
+  whoMenuOpen = false;
+  renderHeader();
+  $('#who-btn')?.focus();
+}
+
+function renderWhoMenu() {
+  const menu = $('#who-menu');
+  if (!menu) return;
+  menu.hidden = !whoMenuOpen;
+  $('#who-btn')?.setAttribute('aria-expanded', String(whoMenuOpen));
+  menu.textContent = '';
+  const me = currentUser();
+  for (const u of DEMO_USERS) {
+    const b = el('button', '', '');
+    b.type = 'button';
+    b.setAttribute('role', 'menuitemradio');
+    b.setAttribute('aria-checked', String(u.id === me.id));
+    b.dataset.persona = u.id;
+    const av = el('span', 'avatar', initials(u));
+    av.setAttribute('aria-hidden', 'true');
+    const t = el('span', 't', '');
+    t.append(el('span', 'nm', u.name), el('span', 'lv', u.level));
+    b.append(av, t, el('span', 'age', String(u.age)));
+    menu.append(b);
+  }
+  menu.append(el('div', 'foot-note', 'Fictional demo profiles · sample data'));
+}
 
 /* The greeting is pinned to Pacific time by request. This page is a link
    someone sends, and "good evening" should read the same for whoever opens it
@@ -4328,10 +4407,13 @@ function pacificHour() {
 function renderHeader() {
   const hour = pacificHour();
   const part = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-  $('#greeting').textContent = `${part}, ${DEMO_USER.name} \u{1F44B}`;
-  $('#who').textContent = DEMO_USER.name;
-  $('#avatar').textContent = DEMO_USER.name.slice(0, 1).toUpperCase();
-  $('#level-line').textContent = DEMO_USER.level;
+  const me = currentUser();
+  $('#greeting').textContent = `${part}, ${firstName(me)} \u{1F44B}`;
+  $('#who').textContent = me.name;
+  $('#avatar').textContent = initials(me);
+  $('#level-line').textContent = me.level;
+  $('#who-btn')?.setAttribute('aria-label', `Demo profile: ${me.name}, ${me.level}. Change profile`);
+  renderWhoMenu();
 
   $('#date-long').textContent = NOW.toLocaleDateString(undefined, inUTC({ month: 'long', day: 'numeric', year: 'numeric' }));
   $('#date-dow').textContent = NOW.toLocaleDateString(undefined, inUTC({ weekday: 'long' }));
@@ -6561,6 +6643,12 @@ window.addEventListener('click', (e) => {
     renderWindowMenu();
   }
 
+  /* The profile picker, handled up here with the other menus so a click
+     anywhere else closes it before a branch below can return. */
+  if (t?.id === 'who-btn') { whoMenuOpen = !whoMenuOpen; renderWhoMenu(); return; }
+  if (t?.dataset.persona) { choosePersona(t.dataset.persona); return; }
+  if (whoMenuOpen) { whoMenuOpen = false; renderWhoMenu(); }
+
   if (!t) return;
 
   if (t.classList.contains('info')) {
@@ -7071,6 +7159,7 @@ function rollDay() {
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
   // The drawer is modal, so it takes Escape before anything underneath does.
+  if (whoMenuOpen) { e.preventDefault(); whoMenuOpen = false; renderWhoMenu(); $('#who-btn')?.focus(); return; }
   if (S.rflMenu) { e.preventDefault(); S.rflMenu = false; renderWindowMenu(); $('#rfl-win')?.focus(); return; }
   if (S.insightOpen || S.dimOpen) { e.preventDefault(); closeInsight(); return; }
   for (const b of $$('.info[aria-expanded="true"]')) b.setAttribute('aria-expanded', 'false');
