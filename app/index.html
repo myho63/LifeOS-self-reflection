@@ -1587,15 +1587,30 @@
   .dr-add { width: 100%; justify-content: center; height: 42px; margin-top: 18px; }
   .dr-added { margin: 8px 0 0; font-size: var(--fs-sm); font-weight: 600; color: var(--good); text-align: center; }
 
-  .dr-chat {
-    margin-top: 16px; padding: 14px; border-radius: var(--r-sm);
-    background: var(--accent-soft); border: 1px solid var(--accent-line);
+  /* "Chat with LifeOS", fixed to the page rather than tucked inside one
+     drawer, so it is one tap away from anywhere and for every demo profile.
+     Below the drawer and its veil (40/41): an open drawer is modal, and a
+     button floating over it would be a second, competing way out. */
+  .chat-fab {
+    position: fixed; right: 20px; bottom: 20px; z-index: 30;
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 48px; padding: 0 20px; border: 0; border-radius: 999px;
+    background: var(--accent); color: #fff;
+    font-size: var(--fs-base); font-weight: 700;
+    box-shadow: 0 10px 28px -8px color-mix(in srgb, var(--accent) 70%, transparent), var(--shadow-lg);
   }
-  .dr-chat h4 { display: flex; align-items: center; gap: 8px; font-size: var(--fs-md); color: var(--accent-ink); }
-  .dr-chat-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
-  .dr-chat p { margin: 0; flex: 1 1 150px; font-size: var(--fs-sm); line-height: 1.45; color: var(--ink-mid); }
-  .dr-chat .ask { flex: none; height: 36px; }
-  .dr-tip { margin: 10px 0 0; font-size: var(--fs-xs); line-height: 1.45; color: var(--ink-soft); }
+  .chat-fab:hover { background: var(--accent-ink); }
+  .chat-fab .ico { font-size: 18px; line-height: 1; }
+  @media (prefers-reduced-motion: no-preference) {
+    .chat-fab { transition: transform .15s ease, background .15s ease; }
+    .chat-fab:hover { transform: translateY(-2px); }
+  }
+  /* Room at the foot of the page, so the button never sits over the last
+     line of the reflection log. */
+  body { padding-bottom: 76px; }
+  @media (max-width: 520px) {
+    .chat-fab { right: 12px; bottom: 12px; height: 44px; padding: 0 16px; font-size: var(--fs-md); }
+  }
 
   /* --------------------------------------- the eleven, as a table
      Every dimension is here whether or not there is anything to say about it,
@@ -2786,6 +2801,13 @@
     <button class="close" id="ai-close">Close</button>
   </div>
 </dialog>
+
+<!-- Chat with LifeOS, fixed to the page for every profile. It opens the same
+     explanation as the header's Ask button: there is no model behind either
+     on this page, and the dialog says so. -->
+<button class="chat-fab" id="chat-fab" type="button">
+  <span class="ico" aria-hidden="true">💬</span>Chat with LifeOS
+</button>
 
 <!-- The persona card. Filled from DEMO_USERS each time a profile is picked. -->
 <dialog class="persona" id="persona-dialog" aria-labelledby="pc-name">
@@ -9082,20 +9104,8 @@ function drawInsight(item) {
   body.append(add);
   if (S.insightAdded) body.append(el('p', 'dr-added', 'It is on the dashboard, under today\u2019s tasks.'));
 
-  // --- and the way out of a panel that can only ever offer so much
-  const chat = el('div', 'dr-chat');
-  const ch = el('h4');
-  ch.append(el('span', '', '💬'), el('span', '', 'Want to explore this further?'));
-  const crow = el('div', 'dr-chat-row');
-  crow.append(el('p', '', 'Chat with LifeOS for personalised ideas based on your full context.'));
-  const cbtn = el('button', 'ask sm', 'Chat with LifeOS →');
-  cbtn.type = 'button';
-  cbtn.id = 'ins-chat';
-  crow.append(cbtn);
-  chat.append(ch, crow);
-  chat.append(el('p', 'dr-tip',
-    'Tip: keep the conversation focused on turning insights into clear next steps, not just exploring ideas.'));
-  body.append(chat);
+  /* "Chat with LifeOS" used to sit here. It is now the button fixed to the
+     page (#chat-fab), the same on every profile. */
 }
 
 /* ------------------------------------------------------------ .xlsx out
@@ -10131,7 +10141,7 @@ window.addEventListener('click', (e) => {
     return;
   }
 
-  if (t.id === 'ins-chat') { closeInsight(); askAi(); return; }
+  if (t.id === 'chat-fab') { if (S.insightOpen || S.dimOpen) closeInsight(); askAi(); return; }
 
   if (t.id === 'ok-redo' || t.id === 'note-back') {
     edit((e) => { delete e.okay[TODAY]; });
