@@ -3096,6 +3096,26 @@ const JORDAN_SIGNALS = {
   healthStatus: 'steady',
 };
 
+/* Amara Okafor, from her persona: 46, in a senior leadership role, married,
+   children becoming independent, financially comfortable. Her log says both
+   children are independent and her daughter has just started a job, so
+   twenty-two and nineteen stand in for their ages; they no longer live at
+   home. "Wondering what's next" is the engine's "restless". Twenty-four
+   years of work follows "the last twenty years"; a mortgage and an
+   emergency fund follow "financially comfortable". */
+const AMARA_SIGNALS = {
+  ageYears: 46,
+  employmentStatus: 'employed',
+  relationshipStatus: 'married',
+  livingArrangement: 'with_partner',
+  children: [{ ageYears: 22, dependent: false }, { ageYears: 19, dependent: false }],
+  careerIntent: 'restless',
+  yearsOfWorkExperience: 24,
+  housingTenure: 'mortgaged',
+  hasEmergencyFund: true,
+  healthStatus: 'steady',
+};
+
 const SEED_RATINGS = {
   health: 7, personal_growth: 6, career: 6, finance: 4, relationships: 6,
   family: 7, fun: 4, contribution: 3, environment: 6, social: 5, spirituality: 4,
@@ -3319,7 +3339,7 @@ let personaId = (() => {
    record, so their log is exactly what it was before profiles existed. Each
    own record is saved under its own key, so a check-in made as Sofia never
    lands in anyone else's log. */
-const OWN_RECORDS = new Set(['sofia', 'elena', 'maya', 'jordan']);
+const OWN_RECORDS = new Set(['sofia', 'elena', 'maya', 'jordan', 'amara']);
 const recordOwner = () => (OWN_RECORDS.has(personaId) ? personaId : '');
 const editsKey = () => (recordOwner() ? `${STORE_KEY}.${recordOwner()}` : STORE_KEY);
 const editsDoc = () => (recordOwner() ? `state/edits-${recordOwner()}` : 'state/edits');
@@ -4173,6 +4193,84 @@ const JORDAN_MONTHS = {
   '2026-08': '.7.75.77.37759933.9.9.9..9537..',
 };
 
+/**
+ * Amara Okafor's own reflections, from the Amara persona log.
+ *
+ * Same treatment as the other profiles with a record of their own: switching
+ * to her swaps the log, the calendar, the journal and the impact table
+ * together. Times are the Pacific evening each was written, stored in UTC.
+ * Faces: Very happy 9, Happy 7, Neutral 5, Unhappy 3.
+ */
+const AMARA_REFLECTIONS = [
+  { date: "2026-09-01", mood: 7, at: "2026-09-02T03:14:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "I had a really productive leadership meeting today. I still enjoy solving difficult problems and helping my team grow. It reminded me that there are parts of my work I genuinely love." },
+  { date: "2026-09-02", mood: 5, at: "2026-09-03T04:27:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "I caught myself wondering whether I want to spend the next ten years climbing the same ladder. Nothing is wrong with my career. I'm just not sure I want more of the same." },
+  { date: "2026-09-04", mood: 9, at: "2026-09-05T02:43:00.000Z",
+    tags: ["relationships", "fun"],
+    text: "My husband and I went out for dinner and ended up talking about places we'd like to travel next year. It was nice to think about what we want to experience together rather than what we need to accomplish." },
+  { date: "2026-09-06", mood: 7, at: "2026-09-07T03:52:00.000Z",
+    tags: ["family", "relationships", "personal_growth"],
+    text: "My daughter called tonight to tell me about her new job. I'm proud of how independent both of my kids have become. It also made me realize that I have more freedom now to think about what I want for myself." },
+  { date: "2026-09-08", mood: 3, at: "2026-09-09T05:06:00.000Z",
+    tags: ["career", "health", "relationships"],
+    text: "I worked late again tonight. I know the project is important, but I keep wondering whether being this available is still worth what it takes from the rest of my life." },
+  { date: "2026-09-10", mood: 9, at: "2026-09-11T01:31:00.000Z",
+    tags: ["fun", "relationships", "personal_growth"],
+    text: "I spent the afternoon planning a trip we've been talking about for months. I felt energized just researching places and imagining what we could experience." },
+  { date: "2026-09-12", mood: 7, at: "2026-09-13T03:18:00.000Z",
+    tags: ["contribution", "career", "personal_growth"],
+    text: "One of the younger people on my team asked me for career advice today. I enjoyed that conversation more than I expected. Helping someone else grow feels increasingly meaningful to me." },
+  { date: "2026-09-14", mood: 5, at: "2026-09-15T04:41:00.000Z",
+    tags: ["finance", "career", "personal_growth"],
+    text: "Financially, we're in a comfortable place. I've started wondering whether that gives me permission to make a career decision based more on meaning and less on compensation or title." },
+  { date: "2026-09-16", mood: 7, at: "2026-09-17T02:26:00.000Z",
+    tags: ["personal_growth", "contribution", "social"],
+    text: "I went to a networking event outside my usual industry. It was refreshing to hear completely different perspectives and made me curious about what other kinds of work I could contribute to." },
+  { date: "2026-09-18", mood: 3, at: "2026-09-19T05:14:00.000Z",
+    tags: ["career", "contribution", "personal_growth"],
+    text: "I had a difficult conversation with a senior colleague today. It wasn't a major problem, but it reminded me how much energy I spend managing organizational politics. I'm increasingly drawn to work where I can see a more direct impact." },
+  { date: "2026-09-20", mood: 9, at: "2026-09-21T00:48:00.000Z",
+    tags: ["relationships", "personal_growth", "fun"],
+    text: "My husband and I took a long walk and talked about what we want the next five years to look like. For once, the conversation wasn't about work or the kids. It felt like we're entering a new chapter together." },
+  { date: "2026-09-22", mood: 7, at: "2026-09-23T03:37:00.000Z",
+    tags: ["contribution", "career", "personal_growth"],
+    text: "I volunteered to mentor someone at work who is just starting out. I really enjoyed it. Maybe developing people is something I want to spend more of my time doing." },
+  { date: "2026-09-24", mood: 5, at: "2026-09-25T04:19:00.000Z",
+    tags: ["career", "personal_growth", "contribution"],
+    text: "I've been thinking about whether I need to make a dramatic career change. Maybe the answer isn't leaving everything behind. Maybe I can reshape what I do and spend more time on the parts that actually matter to me." },
+  { date: "2026-09-25", mood: 9, at: "2026-09-26T02:04:00.000Z",
+    tags: ["relationships", "social", "fun"],
+    text: "We had dinner with some close friends tonight. I realized that I don't want my next chapter to be defined entirely by professional achievement. I want more time for people, experiences, and things that feel meaningful." },
+  { date: "2026-09-26", mood: 7, at: "2026-09-27T03:46:00.000Z",
+    tags: ["contribution", "personal_growth", "career"],
+    text: "I looked back at some of the things I've accomplished over the last twenty years. I'm proud of them, but I also feel ready to ask a different question: what do I want to contribute next?" },
+  { date: "2026-09-27", mood: 7, at: "2026-09-28T04:11:00.000Z",
+    tags: ["personal_growth", "contribution", "relationships", "fun"],
+    text: "I'm starting to see that I don't necessarily need a completely different life. I want to keep the parts that are working—my relationship, financial stability and meaningful work—and intentionally make more room for contribution, learning and experiences." },
+];
+
+/**
+ * Amara's check-ins before her written log: January to August 2026.
+ *
+ * Dummy data, drawn once from a seeded shuffle and written down, so it reads
+ * the same on every visit. The brightest of the profiles -- comfortable,
+ * well supported, restless rather than stretched -- with the odd hard day.
+ * Same encoding as SOFIA_MONTHS.
+ */
+const AMARA_MONTHS = {
+  '2026-01': '.3.95777557.7777577.7779.5759..',
+  '2026-02': '995757..975797..7..7.7.7.9.5',
+  '2026-03': '57175.979..977.79.9.79975757379',
+  '2026-04': '577377399759375597.3.7.9595797',
+  '2026-05': '57579797.7.7...7.97.735.5977.5.',
+  '2026-06': '9.97..577795795397779779775.57',
+  '2026-07': '77737..7959575797.9997977739577',
+  '2026-08': '9.7.957.737939.979.95797577.755',
+};
+
 /** A profile's months as check-in rows, the shape the sample history takes. */
 function monthsToRows(months) {
   const rows = [];
@@ -4188,6 +4286,281 @@ function monthsToRows(months) {
   }
   return rows;
 }
+
+/**
+ * The reading of Amara's sixteen days, made the same way as the other profiles:
+ * written from exactly her entries in the reply format the panel asks Claude
+ * for, then passed through this page's grounding, so every quote is hers word
+ * for word and dated from her log.
+ */
+const AMARA_INSIGHTS = {
+  v: 5,
+  key: "1qjk4r3",
+  at: "2026-09-28T04:20:00.000Z",
+  days: 16,
+  summary: "You seem most energized by helping others grow and by unhurried time with your husband and friends, while late nights and office politics are what bring your harder days.",
+  items: [
+    {
+      dimension: "career",
+      verdict: "attention",
+      headline: "Late nights and office politics are wearing thin",
+      detail: "Both of your unhappy days describe work taking more than it gives back: always being available, and managing politics instead of seeing a direct impact.",
+      common: "work taking more energy than it gives back",
+      excerpts: [
+        {
+          date: "2026-09-18",
+          text: "it reminded me how much energy I spend managing organizational politics"
+        },
+        {
+          date: "2026-09-18",
+          text: "I'm increasingly drawn to work where I can see a more direct impact"
+        },
+        {
+          date: "2026-09-08",
+          text: "I keep wondering whether being this available is still worth what it takes from the rest of my life"
+        },
+        {
+          date: "2026-09-02",
+          text: "I'm just not sure I want more of the same"
+        }
+      ],
+      ideas: [
+        "Try naming one evening a week when you are not available for work",
+        "Notice which parts of the week go on politics, and whether any can be handed on",
+        "List the parts of your work you would keep if you reshaped the role"
+      ]
+    },
+    {
+      dimension: "contribution",
+      verdict: "working",
+      headline: "Helping others grow is becoming what you care about most",
+      detail: "Advising and mentoring younger colleagues keeps turning up as the most meaningful part of your week, and it is shaping what you want to do next.",
+      common: "helping other people grow",
+      excerpts: [
+        {
+          date: "2026-09-26",
+          text: "what do I want to contribute next"
+        },
+        {
+          date: "2026-09-22",
+          text: "Maybe developing people is something I want to spend more of my time doing"
+        },
+        {
+          date: "2026-09-16",
+          text: "made me curious about what other kinds of work I could contribute to"
+        },
+        {
+          date: "2026-09-12",
+          text: "Helping someone else grow feels increasingly meaningful to me"
+        }
+      ],
+      ideas: [
+        "Take on one more mentoring conversation this month",
+        "Ask your organization whether developing people could be a bigger part of your role",
+        "Look at volunteer or advisory work outside your industry"
+      ]
+    },
+    {
+      dimension: "relationships",
+      verdict: "working",
+      headline: "Time with your husband feels like a new chapter",
+      detail: "Your very happy days are conversations and plans with your husband and friends about what you want to experience, not what you need to get done.",
+      common: "planning a next chapter together",
+      excerpts: [
+        {
+          date: "2026-09-25",
+          text: "I want more time for people, experiences, and things that feel meaningful"
+        },
+        {
+          date: "2026-09-20",
+          text: "It felt like we're entering a new chapter together"
+        },
+        {
+          date: "2026-09-10",
+          text: "I felt energized just researching places and imagining what we could experience"
+        },
+        {
+          date: "2026-09-04",
+          text: "It was nice to think about what we want to experience together rather than what we need to accomplish"
+        }
+      ],
+      ideas: [
+        "Keep a regular walk or dinner with your husband that is not about work or the kids",
+        "Book the trip you have been planning",
+        "Make time for the close friends you had dinner with"
+      ]
+    },
+    {
+      dimension: "personal_growth",
+      verdict: "pattern",
+      headline: "You are looking to reshape your work, not leave it",
+      detail: "Your thinking keeps moving from a dramatic change toward keeping what works and making room for more of what matters.",
+      common: "reshaping what you do rather than starting over",
+      excerpts: [
+        {
+          date: "2026-09-27",
+          text: "I don't necessarily need a completely different life"
+        },
+        {
+          date: "2026-09-24",
+          text: "Maybe I can reshape what I do and spend more time on the parts that actually matter to me"
+        },
+        {
+          date: "2026-09-14",
+          text: "whether that gives me permission to make a career decision based more on meaning and less on compensation or title"
+        },
+        {
+          date: "2026-09-06",
+          text: "I have more freedom now to think about what I want for myself"
+        }
+      ],
+      ideas: [
+        "Write down the parts of your life you want to keep exactly as they are",
+        "Sketch a version of your role with more mentoring and less politics",
+        "Give yourself a few months of small experiments before any big decision"
+      ]
+    }
+  ],
+  attributions: [
+    {
+      date: "2026-09-01",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-02",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-04",
+      dimensions: [
+        "relationships",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-06",
+      dimensions: [
+        "family",
+        "relationships",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-08",
+      dimensions: [
+        "career",
+        "health",
+        "relationships"
+      ]
+    },
+    {
+      date: "2026-09-10",
+      dimensions: [
+        "fun",
+        "relationships",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-12",
+      dimensions: [
+        "contribution",
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-14",
+      dimensions: [
+        "finance",
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-16",
+      dimensions: [
+        "personal_growth",
+        "contribution",
+        "social"
+      ]
+    },
+    {
+      date: "2026-09-18",
+      dimensions: [
+        "career",
+        "contribution",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-20",
+      dimensions: [
+        "relationships",
+        "personal_growth",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-22",
+      dimensions: [
+        "contribution",
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-24",
+      dimensions: [
+        "career",
+        "personal_growth",
+        "contribution"
+      ]
+    },
+    {
+      date: "2026-09-25",
+      dimensions: [
+        "relationships",
+        "social",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-26",
+      dimensions: [
+        "contribution",
+        "personal_growth",
+        "career"
+      ]
+    },
+    {
+      date: "2026-09-27",
+      dimensions: [
+        "personal_growth",
+        "contribution",
+        "relationships",
+        "fun"
+      ]
+    }
+  ],
+  notes: {
+    career: "you still love parts of the work, and are tired of the rest taking over",
+    contribution: "mentoring and advising others is where the work feels most meaningful",
+    relationships: "time with your husband feels like the start of a new chapter",
+    personal_growth: "you are asking what you want next rather than what comes next",
+    fun: "planning travel and experiences together gives you energy",
+    finance: "feeling comfortable is giving you room to choose meaning over title",
+    family: "your children's independence has opened up time for yourself",
+    social: "friends and new perspectives widen what you imagine for yourself",
+    health: "late nights are taking something from the rest of your life"
+  }
+};
 
 /**
  * The reading of Jordan's sixteen days, made the same way as the other profiles:
@@ -5518,6 +5891,8 @@ const ELENA_PRIORITIES = ['finance', 'career', 'health'];
 const MAYA_PRIORITIES = ['career', 'personal_growth', 'finance'];
 /* Jordan's, from "What matters right now" on his persona, in its order. */
 const JORDAN_PRIORITIES = ['family', 'health', 'career'];
+/* Amara's, from "What matters right now" on her persona, in its order. */
+const AMARA_PRIORITIES = ['personal_growth', 'contribution', 'relationships'];
 
 /**
  * Everything a profile with its own record brings with it, by profile id.
@@ -5539,6 +5914,10 @@ const OWN = {
   jordan: {
     signals: JORDAN_SIGNALS, priorities: JORDAN_PRIORITIES, reflections: JORDAN_REFLECTIONS,
     insights: JORDAN_INSIGHTS, history: monthsToRows(JORDAN_MONTHS),
+  },
+  amara: {
+    signals: AMARA_SIGNALS, priorities: AMARA_PRIORITIES, reflections: AMARA_REFLECTIONS,
+    insights: AMARA_INSIGHTS, history: monthsToRows(AMARA_MONTHS),
   },
 };
 const own = () => OWN[recordOwner()];
