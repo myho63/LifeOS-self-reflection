@@ -2062,15 +2062,7 @@
   }
   dialog.persona::backdrop { background: rgba(20, 18, 40, .52); }
   dialog.persona .in { position: relative; padding: 22px; display: grid; gap: 16px; }
-  .pc-x {
-    position: absolute; top: 12px; right: 12px;
-    width: 32px; height: 32px; padding: 0; border-radius: 999px;
-    display: grid; place-items: center;
-    border: 1px solid var(--border); background: var(--surface);
-    color: var(--ink-mid); font-size: 20px; line-height: 1;
-  }
-  .pc-x:hover { border-color: var(--border-firm); color: var(--ink); }
-  .pc-head { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 18px; align-items: center; padding-right: 30px; }
+  .pc-head { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 18px; align-items: center; }
   .pc-photo { width: 120px; height: 120px; border-radius: 14px; object-fit: cover; display: block; background: var(--surface-alt); }
   .pc-head h3 { font-size: 22px; letter-spacing: -0.02em; }
   .pc-age { font-size: var(--fs-base); color: var(--ink-mid); margin: 1px 0 8px; }
@@ -2769,7 +2761,6 @@
 <!-- The persona card. Filled from DEMO_USERS each time a profile is picked. -->
 <dialog class="persona" id="persona-dialog" aria-labelledby="pc-name">
   <div class="in">
-    <button class="pc-x" id="persona-x" type="button" aria-label="Close persona">×</button>
     <div class="pc-head">
       <img class="pc-photo" id="pc-photo" alt="">
       <div>
@@ -6889,7 +6880,7 @@ window.addEventListener('click', (e) => {
 
   /* The profile picker, handled up here with the other menus so a click
      anywhere else closes it before a branch below can return. */
-  if (t?.id === 'persona-x' || t?.id === 'persona-go') { closePersona(); return; }
+  if (t?.id === 'persona-go') { closePersona(); return; }
   if (t?.id === 'who-btn') { whoMenuOpen = !whoMenuOpen; renderWhoMenu(); return; }
   if (t?.dataset.persona) { choosePersona(t.dataset.persona); return; }
   if (whoMenuOpen) { whoMenuOpen = false; renderWhoMenu(); }
