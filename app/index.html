@@ -3026,6 +3026,20 @@ const SEED_SIGNALS = {
   healthStatus: 'steady',
 };
 
+/* Sofia Nguyen, from her persona: 17, a high school student living with her
+   parents, single, no children. Work, housing and debt are left unanswered,
+   because none of it applies to her yet -- a blank is truer than a guess. The
+   life stage on her page is the engine's reading of these. */
+const SOFIA_SIGNALS = {
+  ageYears: 17,
+  educationStatus: 'secondary_school',
+  employmentStatus: 'not_working_student',
+  relationshipStatus: 'single',
+  livingArrangement: 'with_parents',
+  children: [],
+  healthStatus: 'steady',
+};
+
 const SEED_RATINGS = {
   health: 7, personal_growth: 6, career: 6, finance: 4, relationships: 6,
   family: 7, fun: 4, contribution: 3, environment: 6, social: 5, spirituality: 4,
@@ -3612,7 +3626,11 @@ function applyEdits() {
   const e = S.edits;
 
   // --- check-ins and notes
-  const byDate = new Map(baselineCheckIns().map((r) => [r.date, { ...r }]));
+  /* A profile with a record of its own has no sample underneath it: her
+     calendar, month and year are her check-ins and nothing else, so every
+     face on the page is one her log can account for. */
+  const sample = recordOwner() ? [] : baselineCheckIns();
+  const byDate = new Map(sample.map((r) => [r.date, { ...r }]));
   for (const [date, value] of Object.entries(e.checkIns)) {
     const row = byDate.get(date) ?? { date };
     if (value === null) delete row.happiness;
@@ -3690,7 +3708,7 @@ function applyEdits() {
     else S.ikigai[axis] = v;
   }
 
-  S.signals = structuredClone(SEED_SIGNALS);
+  S.signals = structuredClone(recordOwner() === 'sofia' ? SOFIA_SIGNALS : SEED_SIGNALS);
   for (const [k, v] of Object.entries(e.signals)) {
     if (v === null) delete S.signals[k];
     else S.signals[k] = v;
@@ -3847,6 +3865,275 @@ const SOFIA_REFLECTIONS = [
 ];
 
 /**
+ * The reading of Sofia's sixteen days, in the shape a real read saves.
+ *
+ * Seeded for the same reason SEED_INSIGHTS is: the hosted page has no model to
+ * ask. It was written from exactly her entries in the reply format the panel
+ * asks Claude for, then passed through this page's own grounding -- every
+ * quote checked word for word against her log and dated from the record, not
+ * the reply -- so it carries no claim the page would not have accepted from a
+ * live read. `key` fingerprints her days, so it goes stale the moment she
+ * checks in again, which is when it should.
+ */
+const SOFIA_INSIGHTS = {
+  v: 5,
+  key: "2umux0",
+  at: "2026-09-28T04:10:00.000Z",
+  days: 16,
+  summary: "You seem happiest when you are trying something new with your hands or spending easy time with friends and family, while the pressure to already know what to study keeps showing up on your harder days.",
+  items: [
+    {
+      dimension: "career",
+      verdict: "attention",
+      headline: "The pressure to decide about college keeps weighing on you",
+      detail: "Both of your unhappy days come back to feeling you should already know what to study, and the feeling returns whenever college applications come up.",
+      common: "feeling pressure to already know what to study",
+      excerpts: [
+        {
+          date: "2026-09-15",
+          text: "I got another email about college applications and suddenly felt overwhelmed"
+        },
+        {
+          date: "2026-09-15",
+          text: "There are so many choices and I don't know how I'm supposed to know which one is right for me"
+        },
+        {
+          date: "2026-09-05",
+          text: "Everyone at school seems to already know what they want to major in"
+        },
+        {
+          date: "2026-09-05",
+          text: "I feel behind because I still have so many different ideas"
+        }
+      ],
+      ideas: [
+        "Try picking one small next step, like reading about a single course, instead of the whole decision",
+        "Set a regular time to look at college emails so they don't catch you off guard",
+        "Notice what eased the pressure before, like talking to your cousin, and do more of it"
+      ]
+    },
+    {
+      dimension: "personal_growth",
+      verdict: "working",
+      headline: "Trying something new is where your best days come from",
+      detail: "Your very happy days keep describing a first try at something, like photography or design tools, and finding an interest you did not know you had.",
+      common: "trying something new and finding an unexpected interest",
+      excerpts: [
+        {
+          date: "2026-09-23",
+          text: "I liked having the freedom to decide what to work on"
+        },
+        {
+          date: "2026-09-19",
+          text: "I spent the afternoon trying different digital design tools. I completely lost track of time."
+        },
+        {
+          date: "2026-09-19",
+          text: "I think I might have found something I want to explore more"
+        },
+        {
+          date: "2026-09-03",
+          text: "I tried a photography class after school today. I didn't expect to enjoy it this much."
+        }
+      ],
+      ideas: [
+        "Keep a short list of things you want to try, and do one small one each week",
+        "Notice what the design tools and photography have in common",
+        "Look for school projects where you can choose the topic"
+      ]
+    },
+    {
+      dimension: "social",
+      verdict: "working",
+      headline: "Talking it through with others makes not knowing feel normal",
+      detail: "Conversations with friends, your parents and your cousin keep turning the worry about not knowing yet into something shared.",
+      common: "conversations that made not knowing yet feel normal",
+      excerpts: [
+        {
+          date: "2026-09-25",
+          text: "It was nice knowing I'm not the only one figuring things out"
+        },
+        {
+          date: "2026-09-17",
+          text: "She said she changed her mind twice, which actually made me feel better about not knowing yet"
+        },
+        {
+          date: "2026-09-04",
+          text: "they were supportive and told me I don't have to figure everything out right now"
+        },
+        {
+          date: "2026-09-01",
+          text: "I had a really fun conversation with my friend about colleges today"
+        }
+      ],
+      ideas: [
+        "Ask one more person you trust how they chose what to study",
+        "Plan time with friends that has nothing to do with college",
+        "When the pressure builds, talk to someone before deciding anything"
+      ]
+    },
+    {
+      dimension: "health",
+      verdict: "pattern",
+      headline: "Long study days and poor sleep leave you flat",
+      detail: "Your neutral days are mostly evenings spent on homework or a test, or a bad night's sleep, when there was little room left for what you enjoy.",
+      common: "days when studying or tiredness crowded out things you enjoy",
+      excerpts: [
+        {
+          date: "2026-09-21",
+          text: "I didn't sleep very well last night and felt tired at school today"
+        },
+        {
+          date: "2026-09-09",
+          text: "I studied for a test all evening and didn't really have time for anything else"
+        },
+        {
+          date: "2026-09-02",
+          text: "I felt like I didn't have much time to do things I actually enjoy"
+        }
+      ],
+      ideas: [
+        "Try keeping a short break for something you enjoy, even on heavy study days",
+        "Notice whether a late night comes before your tired days",
+        "Remember how good the hike felt and plan more time outside"
+      ]
+    }
+  ],
+  attributions: [
+    {
+      date: "2026-09-01",
+      dimensions: [
+        "social",
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-02",
+      dimensions: [
+        "personal_growth",
+        "health"
+      ]
+    },
+    {
+      date: "2026-09-03",
+      dimensions: [
+        "personal_growth",
+        "fun",
+        "career"
+      ]
+    },
+    {
+      date: "2026-09-04",
+      dimensions: [
+        "family",
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-05",
+      dimensions: [
+        "career",
+        "personal_growth",
+        "social"
+      ]
+    },
+    {
+      date: "2026-09-07",
+      dimensions: [
+        "social",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-09",
+      dimensions: [
+        "health",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-11",
+      dimensions: [
+        "contribution",
+        "social",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-13",
+      dimensions: [
+        "family",
+        "health",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-15",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-17",
+      dimensions: [
+        "family",
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-19",
+      dimensions: [
+        "personal_growth",
+        "fun",
+        "career"
+      ]
+    },
+    {
+      date: "2026-09-21",
+      dimensions: [
+        "health",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-23",
+      dimensions: [
+        "personal_growth",
+        "career"
+      ]
+    },
+    {
+      date: "2026-09-25",
+      dimensions: [
+        "social",
+        "career",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-27",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    }
+  ],
+  notes: {
+    career: "not knowing what to study yet is the thread running through your hardest days",
+    personal_growth: "trying new things keeps turning up interests you did not expect",
+    social: "friends make the uncertainty feel shared rather than lonely",
+    family: "your parents and cousin take the pressure off rather than adding to it",
+    health: "long study evenings and poor sleep leave you flat rather than low",
+    fun: "time off from thinking about college shows up on your best days",
+    contribution: "helping at school felt useful and sparked a new idea"
+  }
+};
+
+/**
  * Which seed the stored copy was written against.
  *
  * Bump this whenever SEED_REFLECTIONS changes. A saved copy replaces the seed
@@ -3856,7 +4143,7 @@ const SOFIA_REFLECTIONS = [
  * Changing STORE_KEY does not cover it: that renames the browser's copy and
  * leaves the account's, which is the durable one.
  */
-const SEED_V = 2;
+const SEED_V = 3;
 
 /**
  * The reading of those fifteen days, as it came back.
@@ -4099,6 +4386,10 @@ const SEED_INSIGHTS = {
  */
 const SEED_PRIORITIES = ['contribution', 'career', 'personal_growth'];
 
+/* Sofia's, from "What matters right now" on her persona, in its order. */
+const SOFIA_PRIORITIES = ['personal_growth', 'social', 'health', 'career'];
+const personaPriorities = () => (recordOwner() === 'sofia' ? SOFIA_PRIORITIES : SEED_PRIORITIES);
+
 /**
  * How this demo groups the eleven dimensions by stage relevance.
  *
@@ -4117,6 +4408,13 @@ const SEED_STAGE_BANDS = [
   ['Background for now', ['relationships', 'fun', 'family', 'spirituality']],
 ];
 
+/* Sofia's bands are not stated: her stage is the engine's own reading of her
+   profile, so every dimension falls into the band its stage weight puts it in
+   (the same thresholds the panel already uses for anything unplaced). */
+const stageBands = () => (recordOwner() === 'sofia'
+  ? [['Core right now', []], ['Worth keeping up', []], ['Background for now', []]]
+  : SEED_STAGE_BANDS);
+
 
 /**
  * The person's own priority order: the seeded three, then the rest as ranked.
@@ -4127,7 +4425,7 @@ const SEED_STAGE_BANDS = [
  */
 function priorityOrder() {
   const ids = (last?.dims ?? []).map((d) => d.domainId);
-  const seeded = SEED_PRIORITIES.filter((id) => ids.includes(id));
+  const seeded = personaPriorities().filter((id) => ids.includes(id));
   return [...seeded, ...ids.filter((id) => !seeded.includes(id))];
 }
 
@@ -4135,11 +4433,10 @@ function priorityOrder() {
 function seedEdits() {
   const e = emptyEdits();
   e.seedV = SEED_V;
-  /* Sofia's record starts with no reading. SEED_INSIGHTS were read from the
-     original record's days and quote them; shown beside hers they would be
-     findings about somebody else. */
+  /* Each record carries the reading of its own days. SEED_INSIGHTS quote
+     the original record, so they never appear beside Sofia's. */
   const own = recordOwner() === 'sofia';
-  e.insights = own ? null : structuredClone(SEED_INSIGHTS);
+  e.insights = structuredClone(own ? SOFIA_INSIGHTS : SEED_INSIGHTS);
   for (const r of own ? SOFIA_REFLECTIONS : SEED_REFLECTIONS) {
     e.checkIns[r.date] = r.mood;
     e.notes[r.date] = r.text;
@@ -5347,11 +5644,11 @@ function renderStageRelevance(d, scored, reading) {
     + 'Separate from the reading above, which is only about your own days.'));
 
   const byId = new Map(dims.map((x) => [x.domainId, x]));
-  const bands = SEED_STAGE_BANDS.map(([name, ids]) => [name, ids.map((id) => byId.get(id)).filter(Boolean)]);
+  const bands = stageBands().map(([name, ids]) => [name, ids.map((id) => byId.get(id)).filter(Boolean)]);
   /* Anything the seed forgot still gets shown, in the band the stage would
      have put it in. A dimension missing from the panel altogether is a worse
      failure than one in a surprising row. */
-  const placed = new Set(SEED_STAGE_BANDS.flatMap(([, ids]) => ids));
+  const placed = new Set(stageBands().flatMap(([, ids]) => ids));
   for (const x of dims) {
     if (placed.has(x.domainId)) continue;
     const i = x.priorityScore >= 70 ? 0 : x.priorityScore >= 45 ? 1 : 2;
@@ -5973,7 +6270,7 @@ function renderInsights() {
       ? 'Saved before this view existed — look again to see every reflection behind each finding.'
       : stale
         ? `Read ${stored.days} ${stored.days === 1 ? 'day' : 'days'} — you have checked in since.`
-        : `Read ${count} on ${dateOf(stored.at.slice(0, 10)).toLocaleDateString(undefined, inUTC({ month: 'short', day: 'numeric' }))}.`;
+        : `Read ${count} on ${new Date(stored.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}.`;
   } else {
     when.hidden = false;
     when.textContent = `Ready to read ${count}.`;
