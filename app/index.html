@@ -3040,6 +3040,23 @@ const SOFIA_SIGNALS = {
   healthStatus: 'steady',
 };
 
+/* Elena Martinez, from her persona: 23, working full-time, a single mother
+   with one young child, living independently. Her daughter's age is not on
+   the persona; four stands in for "young". Renting and being the only earner
+   follow from living independently as a single parent; debt and savings are
+   left unanswered rather than guessed. */
+const ELENA_SIGNALS = {
+  ageYears: 23,
+  employmentStatus: 'employed',
+  relationshipStatus: 'single',
+  livingArrangement: 'with_own_family',
+  children: [{ ageYears: 4, dependent: true }],
+  housingTenure: 'renting',
+  soleIncomeEarner: true,
+  financialDependents: 1,
+  healthStatus: 'steady',
+};
+
 const SEED_RATINGS = {
   health: 7, personal_growth: 6, career: 6, finance: 4, relationships: 6,
   family: 7, fun: 4, contribution: 3, environment: 6, social: 5, spirituality: 4,
@@ -3263,7 +3280,7 @@ let personaId = (() => {
    record, so their log is exactly what it was before profiles existed. Each
    own record is saved under its own key, so a check-in made as Sofia never
    lands in anyone else's log. */
-const OWN_RECORDS = new Set(['sofia']);
+const OWN_RECORDS = new Set(['sofia', 'elena']);
 const recordOwner = () => (OWN_RECORDS.has(personaId) ? personaId : '');
 const editsKey = () => (recordOwner() ? `${STORE_KEY}.${recordOwner()}` : STORE_KEY);
 const editsDoc = () => (recordOwner() ? `state/edits-${recordOwner()}` : 'state/edits');
@@ -3627,9 +3644,9 @@ function applyEdits() {
 
   // --- check-ins and notes
   /* A profile with a record of its own has no generated sample underneath it.
-     Sofia's earlier months are her own check-ins (SOFIA_MONTHS), and from
-     September on every face is one her log accounts for. */
-  const sample = recordOwner() === 'sofia' ? sofiaHistory : recordOwner() ? [] : baselineCheckIns();
+     Its earlier months are its own check-ins (SOFIA_MONTHS, ELENA_MONTHS), and
+     from September on every face is one the log accounts for. */
+  const sample = own() ? own().history : baselineCheckIns();
   const byDate = new Map(sample.map((r) => [r.date, { ...r }]));
   for (const [date, value] of Object.entries(e.checkIns)) {
     const row = byDate.get(date) ?? { date };
@@ -3708,7 +3725,7 @@ function applyEdits() {
     else S.ikigai[axis] = v;
   }
 
-  S.signals = structuredClone(recordOwner() === 'sofia' ? SOFIA_SIGNALS : SEED_SIGNALS);
+  S.signals = structuredClone(own()?.signals ?? SEED_SIGNALS);
   for (const [k, v] of Object.entries(e.signals)) {
     if (v === null) delete S.signals[k];
     else S.signals[k] = v;
@@ -3883,21 +3900,377 @@ const SOFIA_MONTHS = {
   '2026-08': '999997.9.7' + '9.9.9.9797' + '999.97.79..',
 };
 
-/** The months above as check-in rows, the shape the sample history takes. */
-const sofiaHistory = (() => {
+/**
+ * Elena Martinez's own reflections, from the Elena persona log.
+ *
+ * Same treatment as Sofia's: her own record, so switching to her swaps the
+ * log, the calendar, the journal and the impact table together. Times are the
+ * Pacific evening each was written, stored in UTC. Faces: Very happy 9,
+ * Happy 7, Neutral 5, Unhappy 3.
+ */
+const ELENA_REFLECTIONS = [
+  { date: "2026-09-01", mood: 7, at: "2026-09-02T03:34:00.000Z",
+    tags: ["family", "career", "finance"],
+    text: "My daughter was so excited to show me something she made today. I was tired after work, but moments like that remind me why I'm working so hard to build a stable life for us." },
+  { date: "2026-09-02", mood: 5, at: "2026-09-03T04:16:00.000Z",
+    tags: ["career", "family", "personal_growth"],
+    text: "I wanted to work on my resume tonight, but after dinner, bath time, and getting everything ready for tomorrow, I barely had any energy left." },
+  { date: "2026-09-04", mood: 7, at: "2026-09-05T01:47:00.000Z",
+    tags: ["career", "family", "health"],
+    text: "I got through a busy day at work and still had enough energy to take my daughter to the park. It felt good to have a normal evening together." },
+  { date: "2026-09-05", mood: 3, at: "2026-09-06T05:21:00.000Z",
+    tags: ["finance", "family"],
+    text: "I had unexpected expenses this week and it made me nervous. I know I'm making progress financially, but sometimes it feels like one unexpected bill can set everything back." },
+  { date: "2026-09-07", mood: 7, at: "2026-09-08T02:38:00.000Z",
+    tags: ["relationships", "health", "fun"],
+    text: "My sister watched my daughter for a few hours tonight so I could finally have some time to myself. I didn't realize how much I needed a break until I had one." },
+  { date: "2026-09-09", mood: 3, at: "2026-09-10T04:42:00.000Z",
+    tags: ["career", "family", "health", "environment"],
+    text: "Work was exhausting today. I came home already drained and still had dinner, laundry, and everything else to handle. I wish I had more time to just breathe." },
+  { date: "2026-09-11", mood: 7, at: "2026-09-12T03:05:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "I finished a project at work that I've been worried about for weeks. It felt good to prove to myself that I can handle more responsibility than I sometimes think I can." },
+  { date: "2026-09-13", mood: 9, at: "2026-09-13T23:26:00.000Z",
+    tags: ["family", "fun", "health"],
+    text: "We spent most of the day at the beach. No work, no errands, no rushing. My daughter had so much fun, and I actually felt relaxed for the first time in a while." },
+  { date: "2026-09-15", mood: 5, at: "2026-09-16T04:53:00.000Z",
+    tags: ["personal_growth", "career", "family"],
+    text: "I keep thinking about going back to school or getting another certification, but I honestly don't know where I would find the time right now." },
+  { date: "2026-09-17", mood: 7, at: "2026-09-18T02:14:00.000Z",
+    tags: ["career", "family", "finance"],
+    text: "I talked with a coworker about a possible promotion. I'm excited about the opportunity, but I'm also wondering what it would mean for my schedule and my daughter." },
+  { date: "2026-09-19", mood: 3, at: "2026-09-20T05:08:00.000Z",
+    tags: ["personal_growth", "health", "family"],
+    text: "I feel like I've been doing everything for everyone and haven't done anything for myself lately. I don't want to lose the person I was before becoming a mom." },
+  { date: "2026-09-21", mood: 7, at: "2026-09-22T01:32:00.000Z",
+    tags: ["family", "fun"],
+    text: "My daughter helped me cook dinner tonight. It took longer and made more of a mess, but we had fun doing it together." },
+  { date: "2026-09-23", mood: 7, at: "2026-09-24T03:46:00.000Z",
+    tags: ["finance", "family", "personal_growth"],
+    text: "I checked my savings today and realized I've actually made progress this year. It isn't where I want it to be yet, but seeing the number grow made me feel more secure." },
+  { date: "2026-09-25", mood: 5, at: "2026-09-26T04:27:00.000Z",
+    tags: ["health", "family"],
+    text: "I had planned to exercise after work, but my daughter wasn't feeling well. I sometimes struggle with feeling guilty when I choose something for myself." },
+  { date: "2026-09-26", mood: 9, at: "2026-09-27T02:51:00.000Z",
+    tags: ["family", "fun", "relationships"],
+    text: "My daughter and I had a movie night at home. Nothing special happened, but it was one of those evenings where I felt really grateful for the life we're building together." },
+  { date: "2026-09-27", mood: 7, at: "2026-09-28T04:18:00.000Z",
+    tags: ["career", "finance", "family", "personal_growth"],
+    text: "I've been thinking about what I want the next few years to look like. I want to keep growing in my career and become more financially secure, but I also don't want to be so busy that I miss my daughter's childhood." },
+];
+
+/**
+ * Elena's check-ins before her written log: January to August 2026.
+ *
+ * Dummy data, drawn once from a seeded shuffle and then written down here, so
+ * it reads the same on every visit. Weighted toward Happy and Neutral with a
+ * share of hard days, the shape of a stretched single parent's year rather
+ * than an even spread. Same encoding as SOFIA_MONTHS.
+ */
+const ELENA_MONTHS = {
+  '2026-01': '.9.95..557773557537535.75..59.5',
+  '2026-02': '55995..377...7.9.7.57.9.75.3',
+  '2026-03': '5.57777.73177..377595795.7.7773',
+  '2026-04': '..77597..5.777777993573.57577.',
+  '2026-05': '9.5575.777..7339593..13737779..',
+  '2026-06': '7.575755.57759777.35775.973575',
+  '2026-07': '.57935133377737.3.97.537.555.35',
+  '2026-08': '3759.557997.777...75..17.779..3',
+};
+
+/** A profile's months as check-in rows, the shape the sample history takes. */
+function monthsToRows(months) {
   const rows = [];
-  for (const [month, days] of Object.entries(SOFIA_MONTHS)) {
+  for (const [month, days] of Object.entries(months)) {
     const [y, m] = month.split('-').map(Number);
     const length = new Date(Date.UTC(y, m, 0)).getUTCDate();
     // A month with the wrong number of days is a typo that shifts every face
     // after it onto the wrong date, so it stops the page rather than mislead.
-    if (days.length !== length) throw new Error(`SOFIA_MONTHS ${month}: ${days.length} days, expected ${length}`);
+    if (days.length !== length) throw new Error(`${month}: ${days.length} days, expected ${length}`);
     [...days].forEach((c, i) => {
       if (c !== '.') rows.push({ date: `${month}-${String(i + 1).padStart(2, '0')}`, happiness: Number(c) });
     });
   }
   return rows;
-})();
+}
+
+/**
+ * The reading of Elena's sixteen days, made the same way as Sofia's below:
+ * written from exactly her entries in the reply format the panel asks Claude
+ * for, then passed through this page's grounding, so every quote is hers word
+ * for word and dated from her log.
+ */
+const ELENA_INSIGHTS = {
+  v: 5,
+  key: "17d1vyg",
+  at: "2026-09-28T04:25:00.000Z",
+  days: 16,
+  summary: "Your best days are the unhurried ones with your daughter, while the harder ones come from being stretched between work, money worries and having nothing left over for yourself.",
+  items: [
+    {
+      dimension: "health",
+      verdict: "attention",
+      headline: "You are running on empty, with little left for yourself",
+      detail: "Your unhappy and neutral days keep describing coming home drained and putting your own needs last, and feeling guilty on the days you don't.",
+      common: "having no time or energy left for yourself",
+      excerpts: [
+        {
+          date: "2026-09-25",
+          text: "I sometimes struggle with feeling guilty when I choose something for myself"
+        },
+        {
+          date: "2026-09-19",
+          text: "I feel like I've been doing everything for everyone and haven't done anything for myself lately"
+        },
+        {
+          date: "2026-09-09",
+          text: "I came home already drained and still had dinner, laundry, and everything else to handle"
+        },
+        {
+          date: "2026-09-07",
+          text: "I didn't realize how much I needed a break until I had one"
+        },
+        {
+          date: "2026-09-02",
+          text: "after dinner, bath time, and getting everything ready for tomorrow, I barely had any energy left"
+        }
+      ],
+      ideas: [
+        "Try protecting one short, regular slot that is only for you",
+        "Ask your sister, or someone else you trust, whether a break could happen more often",
+        "Notice that a break helped rather than cost your daughter anything"
+      ]
+    },
+    {
+      dimension: "family",
+      verdict: "working",
+      headline: "Simple time with your daughter is what lifts you most",
+      detail: "Your happiest entries are ordinary moments together, like the beach, cooking dinner or a movie night at home, rather than anything planned or expensive.",
+      common: "unhurried time together with your daughter",
+      excerpts: [
+        {
+          date: "2026-09-26",
+          text: "it was one of those evenings where I felt really grateful for the life we're building together"
+        },
+        {
+          date: "2026-09-21",
+          text: "It took longer and made more of a mess, but we had fun doing it together"
+        },
+        {
+          date: "2026-09-13",
+          text: "My daughter had so much fun, and I actually felt relaxed for the first time in a while"
+        },
+        {
+          date: "2026-09-04",
+          text: "It felt good to have a normal evening together"
+        },
+        {
+          date: "2026-09-01",
+          text: "moments like that remind me why I'm working so hard to build a stable life for us"
+        }
+      ],
+      ideas: [
+        "Keep a regular low-effort evening together, like a movie night",
+        "Let your daughter help with everyday jobs when there is time",
+        "Notice that the best days did not need to cost anything"
+      ]
+    },
+    {
+      dimension: "finance",
+      verdict: "pattern",
+      headline: "Money feels fragile, even as you make real progress",
+      detail: "One unexpected bill shook your confidence, while seeing your savings grow made you feel more secure. How money feels seems to swing with the latest surprise.",
+      common: "how secure money feels from one week to the next",
+      excerpts: [
+        {
+          date: "2026-09-23",
+          text: "seeing the number grow made me feel more secure"
+        },
+        {
+          date: "2026-09-23",
+          text: "I checked my savings today and realized I've actually made progress this year"
+        },
+        {
+          date: "2026-09-05",
+          text: "I had unexpected expenses this week and it made me nervous"
+        },
+        {
+          date: "2026-09-05",
+          text: "sometimes it feels like one unexpected bill can set everything back"
+        }
+      ],
+      ideas: [
+        "Look back at your savings when a bill knocks your confidence",
+        "Set aside a small amount each month just for surprises",
+        "Write down the progress you have made so far this year"
+      ]
+    },
+    {
+      dimension: "career",
+      verdict: "working",
+      headline: "Progress at work is building your confidence",
+      detail: "Finishing a hard project and talk of a promotion both lifted you, even as you weigh what more responsibility would mean for your time with your daughter.",
+      common: "taking on more at work and what it would mean at home",
+      excerpts: [
+        {
+          date: "2026-09-27",
+          text: "I want to keep growing in my career and become more financially secure"
+        },
+        {
+          date: "2026-09-17",
+          text: "I'm excited about the opportunity, but I'm also wondering what it would mean for my schedule and my daughter"
+        },
+        {
+          date: "2026-09-11",
+          text: "It felt good to prove to myself that I can handle more responsibility than I sometimes think I can"
+        }
+      ],
+      ideas: [
+        "Ask what the promotion would change about your hours before deciding",
+        "Keep a note of the things you handled well at work",
+        "Look for one small learning step that fits the time you have now"
+      ]
+    }
+  ],
+  attributions: [
+    {
+      date: "2026-09-01",
+      dimensions: [
+        "family",
+        "career",
+        "finance"
+      ]
+    },
+    {
+      date: "2026-09-02",
+      dimensions: [
+        "career",
+        "family",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-04",
+      dimensions: [
+        "career",
+        "family",
+        "health"
+      ]
+    },
+    {
+      date: "2026-09-05",
+      dimensions: [
+        "finance",
+        "family"
+      ]
+    },
+    {
+      date: "2026-09-07",
+      dimensions: [
+        "relationships",
+        "health",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-09",
+      dimensions: [
+        "career",
+        "family",
+        "health",
+        "environment"
+      ]
+    },
+    {
+      date: "2026-09-11",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-13",
+      dimensions: [
+        "family",
+        "fun",
+        "health"
+      ]
+    },
+    {
+      date: "2026-09-15",
+      dimensions: [
+        "personal_growth",
+        "career",
+        "family"
+      ]
+    },
+    {
+      date: "2026-09-17",
+      dimensions: [
+        "career",
+        "family",
+        "finance"
+      ]
+    },
+    {
+      date: "2026-09-19",
+      dimensions: [
+        "personal_growth",
+        "health",
+        "family"
+      ]
+    },
+    {
+      date: "2026-09-21",
+      dimensions: [
+        "family",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-23",
+      dimensions: [
+        "finance",
+        "family",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-25",
+      dimensions: [
+        "health",
+        "family"
+      ]
+    },
+    {
+      date: "2026-09-26",
+      dimensions: [
+        "family",
+        "fun",
+        "relationships"
+      ]
+    },
+    {
+      date: "2026-09-27",
+      dimensions: [
+        "career",
+        "finance",
+        "family",
+        "personal_growth"
+      ]
+    }
+  ],
+  notes: {
+    family: "ordinary time with your daughter is what your best days are made of",
+    health: "coming home drained leaves little room to look after yourself",
+    finance: "savings are growing, but one surprise bill can still shake you",
+    career: "finishing hard work and a possible promotion are building your confidence",
+    personal_growth: "you want to keep growing, and time is what keeps getting in the way",
+    fun: "a day with no errands or rushing does a lot for you",
+    relationships: "your sister stepping in gave you a break you badly needed",
+    environment: "the chores waiting at home add to the tiredness after work"
+  }
+};
 
 /**
  * The reading of Sofia's sixteen days, in the shape a real read saves.
@@ -4423,7 +4796,25 @@ const SEED_PRIORITIES = ['contribution', 'career', 'personal_growth'];
 
 /* Sofia's, from "What matters right now" on her persona, in its order. */
 const SOFIA_PRIORITIES = ['personal_growth', 'social', 'health', 'career'];
-const personaPriorities = () => (recordOwner() === 'sofia' ? SOFIA_PRIORITIES : SEED_PRIORITIES);
+/* Elena's, from "What matters right now" on her persona, in its order. */
+const ELENA_PRIORITIES = ['finance', 'career', 'health'];
+
+/**
+ * Everything a profile with its own record brings with it, by profile id.
+ * A profile not listed here shares the original record and its sample.
+ */
+const OWN = {
+  sofia: {
+    signals: SOFIA_SIGNALS, priorities: SOFIA_PRIORITIES, reflections: SOFIA_REFLECTIONS,
+    insights: SOFIA_INSIGHTS, history: monthsToRows(SOFIA_MONTHS),
+  },
+  elena: {
+    signals: ELENA_SIGNALS, priorities: ELENA_PRIORITIES, reflections: ELENA_REFLECTIONS,
+    insights: ELENA_INSIGHTS, history: monthsToRows(ELENA_MONTHS),
+  },
+};
+const own = () => OWN[recordOwner()];
+const personaPriorities = () => own()?.priorities ?? SEED_PRIORITIES;
 
 /**
  * How this demo groups the eleven dimensions by stage relevance.
@@ -4443,10 +4834,10 @@ const SEED_STAGE_BANDS = [
   ['Background for now', ['relationships', 'fun', 'family', 'spirituality']],
 ];
 
-/* Sofia's bands are not stated: her stage is the engine's own reading of her
-   profile, so every dimension falls into the band its stage weight puts it in
+/* An own record's bands are not stated: the stage is the engine's own reading
+   of that profile, so every dimension falls into the band its stage weight puts it in
    (the same thresholds the panel already uses for anything unplaced). */
-const stageBands = () => (recordOwner() === 'sofia'
+const stageBands = () => (own()
   ? [['Core right now', []], ['Worth keeping up', []], ['Background for now', []]]
   : SEED_STAGE_BANDS);
 
@@ -4469,10 +4860,10 @@ function seedEdits() {
   const e = emptyEdits();
   e.seedV = SEED_V;
   /* Each record carries the reading of its own days. SEED_INSIGHTS quote
-     the original record, so they never appear beside Sofia's. */
-  const own = recordOwner() === 'sofia';
-  e.insights = structuredClone(own ? SOFIA_INSIGHTS : SEED_INSIGHTS);
-  for (const r of own ? SOFIA_REFLECTIONS : SEED_REFLECTIONS) {
+     the original record, so they never appear beside anyone else's. */
+  const mine = own();
+  e.insights = structuredClone(mine ? mine.insights : SEED_INSIGHTS);
+  for (const r of mine ? mine.reflections : SEED_REFLECTIONS) {
     e.checkIns[r.date] = r.mood;
     e.notes[r.date] = r.text;
     e.tags[r.date] = [...r.tags];
