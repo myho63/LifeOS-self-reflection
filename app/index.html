@@ -3152,6 +3152,23 @@ const DAVID_SIGNALS = {
   healthStatus: 'steady',
 };
 
+/* Evelyn Brooks, from her persona: 76, retired for several years, widowed,
+   adult children, an active social life. She lives on her own. Her log has
+   a daughter nearby and a son out of town with a family of his own, so fifty
+   and forty-seven stand in for their ages. A home owned outright and an
+   emergency fund stand in for a settled retirement; neither is on the
+   persona. */
+const EVELYN_SIGNALS = {
+  ageYears: 76,
+  employmentStatus: 'retired',
+  relationshipStatus: 'widowed',
+  livingArrangement: 'alone',
+  children: [{ ageYears: 50, dependent: false }, { ageYears: 47, dependent: false }],
+  housingTenure: 'owned_outright',
+  hasEmergencyFund: true,
+  healthStatus: 'steady',
+};
+
 const SEED_RATINGS = {
   health: 7, personal_growth: 6, career: 6, finance: 4, relationships: 6,
   family: 7, fun: 4, contribution: 3, environment: 6, social: 5, spirituality: 4,
@@ -3375,7 +3392,7 @@ let personaId = (() => {
    record, so their log is exactly what it was before profiles existed. Each
    own record is saved under its own key, so a check-in made as Sofia never
    lands in anyone else's log. */
-const OWN_RECORDS = new Set(['sofia', 'elena', 'maya', 'jordan', 'amara', 'leo', 'david']);
+const OWN_RECORDS = new Set(['sofia', 'elena', 'maya', 'jordan', 'amara', 'leo', 'david', 'evelyn']);
 const recordOwner = () => (OWN_RECORDS.has(personaId) ? personaId : '');
 const editsKey = () => (recordOwner() ? `${STORE_KEY}.${recordOwner()}` : STORE_KEY);
 const editsDoc = () => (recordOwner() ? `state/edits-${recordOwner()}` : 'state/edits');
@@ -4464,6 +4481,84 @@ const DAVID_MONTHS = {
   '2026-08': '7.7597757777..7.5...7...59.7777',
 };
 
+/**
+ * Evelyn Brooks's own reflections, from the Evelyn persona log.
+ *
+ * Same treatment as the other profiles with a record of their own: switching
+ * to her swaps the log, the calendar, the journal and the impact table
+ * together. Times are the Pacific time each was written -- several of hers
+ * are mornings -- stored in UTC. Faces: Very happy 9, Happy 7, Neutral 5,
+ * Unhappy 3.
+ */
+const EVELYN_REFLECTIONS = [
+  { date: "2026-09-01", mood: 7, at: "2026-09-01T15:24:00.000Z",
+    tags: ["health", "social", "relationships"],
+    text: "I went for my usual morning walk and stopped to talk with one of my neighbors. I enjoy having people around me who know me well." },
+  { date: "2026-09-02", mood: 9, at: "2026-09-03T02:16:00.000Z",
+    tags: ["family", "relationships", "fun"],
+    text: "My daughter came over for dinner tonight. We spent most of the evening talking and laughing, and I realized how much I enjoy the relationship we have as adults now." },
+  { date: "2026-09-04", mood: 7, at: "2026-09-04T17:42:00.000Z",
+    tags: ["environment", "health", "personal_growth"],
+    text: "I spent the morning in the garden. There is always something to learn, even after all these years. I like having something living to take care of." },
+  { date: "2026-09-06", mood: 7, at: "2026-09-07T00:38:00.000Z",
+    tags: ["contribution", "social", "personal_growth"],
+    text: "I volunteered at the community center today. One of the other volunteers asked me to help organize an upcoming event, and I enjoyed feeling useful and involved." },
+  { date: "2026-09-08", mood: 5, at: "2026-09-09T03:51:00.000Z",
+    tags: ["social", "relationships", "health"],
+    text: "I had a quiet day at home. Nothing was wrong, but by the evening I realized I hadn't really talked to anyone. I think I enjoy my independence more when I also have plans with other people." },
+  { date: "2026-09-10", mood: 9, at: "2026-09-11T01:27:00.000Z",
+    tags: ["personal_growth", "fun", "social"],
+    text: "I signed up for a short photography workshop. I'm not trying to become an expert. I just thought it would be fun to learn something completely new." },
+  { date: "2026-09-12", mood: 7, at: "2026-09-13T02:43:00.000Z",
+    tags: ["social", "relationships", "fun"],
+    text: "I had lunch with two old friends today. We talked about traveling and realized we should stop saying \"one day\" and actually plan something." },
+  { date: "2026-09-14", mood: 3, at: "2026-09-15T04:12:00.000Z",
+    tags: ["relationships", "family"],
+    text: "I missed my husband more than usual today. It was one of those ordinary moments when I wanted to tell him something and then remembered I couldn't. I spent some time looking through old photos." },
+  { date: "2026-09-16", mood: 7, at: "2026-09-16T15:06:00.000Z",
+    tags: ["health", "fun"],
+    text: "I went back to my exercise class after missing a week. I felt much better afterward. I want to keep moving because being able to do the things I enjoy is very important to me." },
+  { date: "2026-09-18", mood: 7, at: "2026-09-18T23:52:00.000Z",
+    tags: ["contribution", "social", "personal_growth", "environment"],
+    text: "I helped a younger volunteer learn how to organize the community garden. She reminded me of myself when I was younger and eager to learn everything. It was a lovely afternoon." },
+  { date: "2026-09-20", mood: 9, at: "2026-09-21T01:19:00.000Z",
+    tags: ["family", "relationships"],
+    text: "My son called from out of town today. We talked for almost an hour about his family and his plans for the next few months. I feel lucky that my children still make time for these conversations." },
+  { date: "2026-09-22", mood: 5, at: "2026-09-22T18:08:00.000Z",
+    tags: ["fun", "social", "personal_growth"],
+    text: "I've been thinking about traveling again. I have plenty of places I'd like to see, but I sometimes hesitate because I don't want to travel alone. Maybe I should look for a group trip." },
+  { date: "2026-09-24", mood: 7, at: "2026-09-25T02:35:00.000Z",
+    tags: ["contribution", "social", "personal_growth"],
+    text: "I spent the afternoon preparing things for the community event next week. It was more work than I expected, but I enjoyed knowing that what I was doing would be useful to other people." },
+  { date: "2026-09-25", mood: 9, at: "2026-09-26T03:42:00.000Z",
+    tags: ["social", "fun", "relationships"],
+    text: "I had dinner with several friends tonight and we started talking about taking a trip together next year. I haven't laughed that much in a while." },
+  { date: "2026-09-26", mood: 7, at: "2026-09-26T16:18:00.000Z",
+    tags: ["personal_growth", "environment", "fun"],
+    text: "I tried a new gardening technique today and it actually worked. I like that I can still surprise myself by learning something new." },
+  { date: "2026-09-27", mood: 7, at: "2026-09-28T02:54:00.000Z",
+    tags: ["health", "personal_growth", "relationships", "contribution"],
+    text: "I've been thinking about what I want the next few years to look like. I don't want to simply stay busy. I want to stay healthy, keep learning, spend time with people I love, and keep contributing where I can." },
+];
+
+/**
+ * Evelyn's check-ins before her written log: January to August 2026.
+ *
+ * Dummy data, drawn once from a seeded shuffle and written down, so it reads
+ * the same on every visit. Mostly Happy -- content, active, well connected --
+ * with the occasional low day. Same encoding as SOFIA_MONTHS.
+ */
+const EVELYN_MONTHS = {
+  '2026-01': '.5577395379555377.1797797.75971',
+  '2026-02': '9377.715793.157977595.7.777.',
+  '2026-03': '..973577.7.7973779.735..777999.',
+  '2026-04': '79777.79575955.3797.7.5955797.',
+  '2026-05': '7.97..799777.5.99577.9795551.7.',
+  '2026-06': '.7..55.79.7.95775..57377779977',
+  '2026-07': '757.5955599.77.5.7.995977.97777',
+  '2026-08': '.379557739577..9777775779379557',
+};
+
 /** A profile's months as check-in rows, the shape the sample history takes. */
 function monthsToRows(months) {
   const rows = [];
@@ -4479,6 +4574,261 @@ function monthsToRows(months) {
   }
   return rows;
 }
+
+/**
+ * The reading of Evelyn's sixteen days, made the same way as the other profiles:
+ * written from exactly her entries in the reply format the panel asks Claude
+ * for, then passed through this page's grounding, so every quote is hers word
+ * for word and dated from her log.
+ */
+const EVELYN_INSIGHTS = {
+  v: 5,
+  key: "79ujp",
+  at: "2026-09-28T03:05:00.000Z",
+  days: 16,
+  summary: "You seem happiest with your children and friends and when you are learning or helping others, while the harder days are the quiet ones on your own and the moments you miss your husband.",
+  items: [
+    {
+      dimension: "social",
+      verdict: "pattern",
+      headline: "Time on your own is better when there are people in your plans",
+      detail: "Your quieter days are the ones where you realized you hadn't talked to anyone, while dinners and lunches with friends are among your happiest.",
+      common: "how much company shapes your days",
+      excerpts: [
+        {
+          date: "2026-09-25",
+          text: "I haven't laughed that much in a while"
+        },
+        {
+          date: "2026-09-22",
+          text: "I don't want to travel alone. Maybe I should look for a group trip"
+        },
+        {
+          date: "2026-09-08",
+          text: "I think I enjoy my independence more when I also have plans with other people"
+        },
+        {
+          date: "2026-09-08",
+          text: "by the evening I realized I hadn't really talked to anyone"
+        }
+      ],
+      ideas: [
+        "Try keeping at least one plan with someone on the calendar each week",
+        "Look into group trips, or the trip your friends started planning",
+        "Invite a neighbor on your morning walk"
+      ]
+    },
+    {
+      dimension: "relationships",
+      verdict: "watching",
+      headline: "Missing your husband still surfaces in ordinary moments",
+      detail: "Your one unhappy day came from wanting to share something with him and remembering you couldn't.",
+      common: "missing your husband in everyday moments",
+      excerpts: [
+        {
+          date: "2026-09-14",
+          text: "I wanted to tell him something and then remembered I couldn't"
+        },
+        {
+          date: "2026-09-14",
+          text: "I missed my husband more than usual today"
+        }
+      ],
+      ideas: [
+        "Share one of the old photos with your children",
+        "Tell someone close the thing you wanted to tell him",
+        "Be gentle with yourself on days like this"
+      ]
+    },
+    {
+      dimension: "contribution",
+      verdict: "working",
+      headline: "Helping at the community center keeps you useful and involved",
+      detail: "Organizing events and teaching a younger volunteer left you feeling useful, even when it was more work than you expected.",
+      common: "being useful to other people",
+      excerpts: [
+        {
+          date: "2026-09-24",
+          text: "I enjoyed knowing that what I was doing would be useful to other people"
+        },
+        {
+          date: "2026-09-18",
+          text: "She reminded me of myself when I was younger and eager to learn everything"
+        },
+        {
+          date: "2026-09-06",
+          text: "I enjoyed feeling useful and involved"
+        }
+      ],
+      ideas: [
+        "Offer to teach another volunteer something you know well",
+        "Keep a regular day at the community center",
+        "Notice which kinds of help you enjoy giving most"
+      ]
+    },
+    {
+      dimension: "family",
+      verdict: "working",
+      headline: "Time with your children is among your happiest",
+      detail: "A dinner with your daughter and a long call with your son both turned into very happy days.",
+      common: "time and conversation with your children",
+      excerpts: [
+        {
+          date: "2026-09-20",
+          text: "I feel lucky that my children still make time for these conversations"
+        },
+        {
+          date: "2026-09-02",
+          text: "I realized how much I enjoy the relationship we have as adults now"
+        }
+      ],
+      ideas: [
+        "Set a regular time to call your son",
+        "Invite your daughter to join the photography workshop or the garden",
+        "Plan something to look forward to with your family"
+      ]
+    }
+  ],
+  attributions: [
+    {
+      date: "2026-09-01",
+      dimensions: [
+        "health",
+        "social",
+        "relationships"
+      ]
+    },
+    {
+      date: "2026-09-02",
+      dimensions: [
+        "family",
+        "relationships",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-04",
+      dimensions: [
+        "environment",
+        "health",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-06",
+      dimensions: [
+        "contribution",
+        "social",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-08",
+      dimensions: [
+        "social",
+        "relationships",
+        "health"
+      ]
+    },
+    {
+      date: "2026-09-10",
+      dimensions: [
+        "personal_growth",
+        "fun",
+        "social"
+      ]
+    },
+    {
+      date: "2026-09-12",
+      dimensions: [
+        "social",
+        "relationships",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-14",
+      dimensions: [
+        "relationships",
+        "family"
+      ]
+    },
+    {
+      date: "2026-09-16",
+      dimensions: [
+        "health",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-18",
+      dimensions: [
+        "contribution",
+        "social",
+        "personal_growth",
+        "environment"
+      ]
+    },
+    {
+      date: "2026-09-20",
+      dimensions: [
+        "family",
+        "relationships"
+      ]
+    },
+    {
+      date: "2026-09-22",
+      dimensions: [
+        "fun",
+        "social",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-24",
+      dimensions: [
+        "contribution",
+        "social",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-25",
+      dimensions: [
+        "social",
+        "fun",
+        "relationships"
+      ]
+    },
+    {
+      date: "2026-09-26",
+      dimensions: [
+        "personal_growth",
+        "environment",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-27",
+      dimensions: [
+        "health",
+        "personal_growth",
+        "relationships",
+        "contribution"
+      ]
+    }
+  ],
+  notes: {
+    social: "friends and plans with people are what make your independence enjoyable",
+    relationships: "missing your husband still comes up in ordinary moments",
+    contribution: "the community center keeps you useful and involved",
+    family: "time with your children is among your happiest",
+    personal_growth: "you still enjoy surprising yourself by learning something new",
+    health: "staying active matters because it keeps you doing what you enjoy",
+    fun: "a trip with friends is starting to feel possible",
+    environment: "the garden is somewhere you keep learning"
+  }
+};
 
 /**
  * The reading of David's sixteen days, made the same way as the other profiles:
@@ -6610,6 +6960,8 @@ const AMARA_PRIORITIES = ['personal_growth', 'contribution', 'relationships'];
 const LEO_PRIORITIES = ['personal_growth', 'fun', 'contribution'];
 /* David's, from "What matters right now" on his persona, in its order. */
 const DAVID_PRIORITIES = ['contribution', 'relationships', 'health'];
+/* Evelyn's, from "What matters right now" on her persona, in its order. */
+const EVELYN_PRIORITIES = ['health', 'relationships', 'contribution'];
 
 /**
  * Everything a profile with its own record brings with it, by profile id.
@@ -6643,6 +6995,10 @@ const OWN = {
   david: {
     signals: DAVID_SIGNALS, priorities: DAVID_PRIORITIES, reflections: DAVID_REFLECTIONS,
     insights: DAVID_INSIGHTS, history: monthsToRows(DAVID_MONTHS),
+  },
+  evelyn: {
+    signals: EVELYN_SIGNALS, priorities: EVELYN_PRIORITIES, reflections: EVELYN_REFLECTIONS,
+    insights: EVELYN_INSIGHTS, history: monthsToRows(EVELYN_MONTHS),
   },
 };
 const own = () => OWN[recordOwner()];
