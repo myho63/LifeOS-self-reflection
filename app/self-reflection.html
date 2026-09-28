@@ -3627,10 +3627,10 @@ function applyEdits() {
   const e = S.edits;
 
   // --- check-ins and notes
-  /* A profile with a record of its own has no sample underneath it: her
-     calendar, month and year are her check-ins and nothing else, so every
-     face on the page is one her log can account for. */
-  const sample = recordOwner() ? [] : baselineCheckIns();
+  /* A profile with a record of its own has no generated sample underneath it.
+     Sofia's earlier months are her own check-ins (SOFIA_MONTHS), and from
+     September on every face is one her log accounts for. */
+  const sample = recordOwner() === 'sofia' ? sofiaHistory : recordOwner() ? [] : baselineCheckIns();
   const byDate = new Map(sample.map((r) => [r.date, { ...r }]));
   for (const [date, value] of Object.entries(e.checkIns)) {
     const row = byDate.get(date) ?? { date };
@@ -3864,6 +3864,41 @@ const SOFIA_REFLECTIONS = [
     tags: ["career", "personal_growth"],
     text: "I've been thinking about college again, but I'm trying not to pressure myself to have one perfect answer. I want to explore a few things first and see what actually feels right." },
 ];
+
+/**
+ * Sofia's check-ins before her written log begins: March to August 2026.
+ *
+ * One character per day of the month, first to last: 9 Very happy, 7 Happy,
+ * 5 Neutral, 3 Unhappy, 1 Very unhappy, "." for a day with no check-in. These
+ * are faces without words, so they play the part the generated sample history
+ * plays for the other profiles: they fill the calendar, the month and the
+ * year, and nothing that reads what she wrote ever sees them. September is
+ * her log and only her log.
+ */
+const SOFIA_MONTHS = {
+  '2026-03': '7577.7997.' + '.77977555.' + '7....9799.7',
+  '2026-04': '...997.79.' + '.9779.7997' + '7797.9999.',
+  '2026-05': '79.9797997' + '.77.999797' + '999979.7799',
+  '2026-06': '9.9.799979' + '.999.79979' + '.99..9999.',
+  '2026-07': '79.9.999.9' + '997.97..97' + '979...7.997',
+  '2026-08': '999997.9.7' + '9.9.9.9797' + '999.97.79..',
+};
+
+/** The months above as check-in rows, the shape the sample history takes. */
+const sofiaHistory = (() => {
+  const rows = [];
+  for (const [month, days] of Object.entries(SOFIA_MONTHS)) {
+    const [y, m] = month.split('-').map(Number);
+    const length = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    // A month with the wrong number of days is a typo that shifts every face
+    // after it onto the wrong date, so it stops the page rather than mislead.
+    if (days.length !== length) throw new Error(`SOFIA_MONTHS ${month}: ${days.length} days, expected ${length}`);
+    [...days].forEach((c, i) => {
+      if (c !== '.') rows.push({ date: `${month}-${String(i + 1).padStart(2, '0')}`, happiness: Number(c) });
+    });
+  }
+  return rows;
+})();
 
 /**
  * The reading of Sofia's sixteen days, in the shape a real read saves.
