@@ -673,19 +673,41 @@
 
   /* Sits in the header beside the date pill, so it matches that pill's
      two-line rhythm rather than the sidebar cards' proportions. */
+  /* The demo profile card: a tinted, ringed card that says whose page this
+     is and that they are a demo user. Taller than the date pill beside it,
+     because it carries three lines — the band centres them on each other. */
+  .top .right > .who-pick { height: auto; }
   .whoami-card {
-    display: flex; align-items: center; gap: 8px;
-    padding: 0 10px 0 6px; border-radius: var(--r-sm);
-    background: var(--surface); border: 1px solid var(--border);
-    text-align: left; line-height: 1.25;
+    display: flex; align-items: center; gap: 12px;
+    padding: 7px 9px 7px 7px; border-radius: 16px;
+    background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface));
+    border: 1px solid var(--accent-line);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-soft) 60%, transparent), var(--shadow);
+    text-align: left; line-height: 1.2;
   }
-  .whoami-card .avatar { width: 28px; height: 28px; flex-basis: 28px; font-size: var(--fs-sm); }
-  .whoami-card .t { display: grid; }
-  .whoami-card .nm { font-size: var(--fs-md); font-weight: 700; }
-  .whoami-card .lv { font-size: var(--fs-sm); color: var(--ink-soft); white-space: nowrap; }
-  .whoami-card .chev { color: var(--ink-soft); font-size: 17px; line-height: 1; }
-  .whoami-card:hover { border-color: var(--border-firm); }
-  button.whoami-card { height: 100%; }
+  .whoami-card .avatar { width: 46px; height: 46px; flex-basis: 46px; font-size: var(--fs-base); }
+  .whoami-card .avatar.photo {
+    width: 46px; height: 46px; flex-basis: 46px;
+    border: 2px solid var(--surface); box-shadow: 0 0 0 1.5px var(--accent-line);
+  }
+  .whoami-card .t { display: grid; justify-items: start; gap: 3px; min-width: 0; }
+  .whoami-card .nm { font-size: var(--fs-base); font-weight: 800; color: var(--ink); letter-spacing: -0.01em; white-space: nowrap; }
+  .whoami-card .demo {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 1px 8px 1px 6px; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent-ink);
+    font-size: var(--fs-2xs); font-weight: 600; line-height: 1.5;
+  }
+  .whoami-card .lv { font-size: var(--fs-sm); color: var(--ink-mid); white-space: nowrap; }
+  .whoami-card .chev {
+    width: 28px; height: 28px; flex: none; margin-left: 4px;
+    display: grid; place-items: center; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent);
+  }
+  .whoami-card:hover { border-color: var(--accent); }
+  .whoami-card:hover .chev, .whoami-card[aria-expanded="true"] .chev { background: var(--accent-line); }
+  @media (prefers-reduced-motion: no-preference) { .whoami-card .chev svg { transition: transform .15s ease; } }
+  .whoami-card[aria-expanded="true"] .chev svg { transform: rotate(180deg); }
 
   /* The profile picker borrows the window menu's look, so the page has one
      kind of dropdown. Wider, because each row carries a name, an age and a
@@ -699,7 +721,6 @@
   .who-menu .lv { font-size: var(--fs-xs); color: var(--ink-soft); }
   .avatar.photo { overflow: hidden; background: var(--surface-alt); }
   .avatar.photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .whoami-card .avatar.photo { width: 32px; height: 32px; flex-basis: 32px; }
   .who-menu .avatar.photo { width: 32px; height: 32px; flex-basis: 32px; }
   .who-menu button[aria-checked="true"] { background: var(--accent-soft); }
   .who-menu button[aria-checked="true"] .nm { color: var(--accent-ink); }
@@ -2170,9 +2191,17 @@
             <span class="avatar" id="avatar" aria-hidden="true">S</span>
             <span class="t">
               <span class="nm" id="who">Sofia Nguyen</span>
+              <span class="demo">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 2l1.9 5.6L19.5 9.5 13.9 11.4 12 17l-1.9-5.6L4.5 9.5l5.6-1.9L12 2Z"/>
+                </svg>
+                Demo user
+              </span>
               <span class="lv" id="level-line">Teen &amp; Future Explorer</span>
             </span>
-            <span class="chev" aria-hidden="true">⌄</span>
+            <span class="chev" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </span>
           </button>
           <div class="rfl-menu who-menu" id="who-menu" role="menu" aria-label="Demo profile" hidden></div>
         </div>
