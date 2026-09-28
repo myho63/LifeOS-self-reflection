@@ -3057,6 +3057,24 @@ const ELENA_SIGNALS = {
   healthStatus: 'steady',
 };
 
+/* Maya Chen, from her persona: 27, an early-to-mid-career professional,
+   single, no children, financially independent. She works from "my
+   apartment", so she lives alone and rents; "not sure the career is right"
+   is the engine's "restless", and "some savings" is an emergency fund. Years
+   of work are not on the persona; five is a stand-in for early-to-mid. */
+const MAYA_SIGNALS = {
+  ageYears: 27,
+  employmentStatus: 'employed',
+  relationshipStatus: 'single',
+  livingArrangement: 'alone',
+  children: [],
+  careerIntent: 'restless',
+  yearsOfWorkExperience: 5,
+  housingTenure: 'renting',
+  hasEmergencyFund: true,
+  healthStatus: 'steady',
+};
+
 const SEED_RATINGS = {
   health: 7, personal_growth: 6, career: 6, finance: 4, relationships: 6,
   family: 7, fun: 4, contribution: 3, environment: 6, social: 5, spirituality: 4,
@@ -3280,7 +3298,7 @@ let personaId = (() => {
    record, so their log is exactly what it was before profiles existed. Each
    own record is saved under its own key, so a check-in made as Sofia never
    lands in anyone else's log. */
-const OWN_RECORDS = new Set(['sofia', 'elena']);
+const OWN_RECORDS = new Set(['sofia', 'elena', 'maya']);
 const recordOwner = () => (OWN_RECORDS.has(personaId) ? personaId : '');
 const editsKey = () => (recordOwner() ? `${STORE_KEY}.${recordOwner()}` : STORE_KEY);
 const editsDoc = () => (recordOwner() ? `state/edits-${recordOwner()}` : 'state/edits');
@@ -3978,6 +3996,84 @@ const ELENA_MONTHS = {
   '2026-08': '3759.557997.777...75..17.779..3',
 };
 
+/**
+ * Maya Chen's own reflections, from the Maya persona log.
+ *
+ * Same treatment as Sofia's and Elena's: her own record, so switching to her
+ * swaps the log, the calendar, the journal and the impact table together.
+ * Times are the Pacific evening each was written, stored in UTC. Faces: Very
+ * happy 9, Happy 7, Neutral 5, Unhappy 3.
+ */
+const MAYA_REFLECTIONS = [
+  { date: "2026-09-01", mood: 7, at: "2026-09-02T02:18:00.000Z",
+    tags: ["career", "personal_growth", "social"],
+    text: "I had a really good conversation with someone on another team today. Their work sounds completely different from mine, and it made me curious about what else I could do with my skills." },
+  { date: "2026-09-02", mood: 5, at: "2026-09-03T03:43:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "I spent most of today doing routine work. Nothing was particularly bad, but I kept wondering if I want to be doing the same kind of work a few years from now." },
+  { date: "2026-09-04", mood: 9, at: "2026-09-05T01:27:00.000Z",
+    tags: ["fun", "personal_growth"],
+    text: "I signed up for a weekend photography class. I've been wanting to try something completely unrelated to work, and I'm excited to see whether I enjoy it." },
+  { date: "2026-09-05", mood: 7, at: "2026-09-06T04:36:00.000Z",
+    tags: ["social", "relationships", "fun"],
+    text: "Dinner with my friends tonight reminded me how much I enjoy being around people who are curious and trying new things." },
+  { date: "2026-09-07", mood: 3, at: "2026-09-08T03:15:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "I looked at job postings tonight and started comparing myself to people who seem much further ahead in their careers. I know everyone's path is different, but it still got to me." },
+  { date: "2026-09-09", mood: 7, at: "2026-09-10T02:52:00.000Z",
+    tags: ["personal_growth", "career"],
+    text: "I finished an online course I've been taking. It feels good to know I'm still building skills even though I'm not completely sure where I want to use them yet." },
+  { date: "2026-09-11", mood: 9, at: "2026-09-12T01:41:00.000Z",
+    tags: ["environment", "career", "personal_growth"],
+    text: "I worked from a coffee shop today instead of my apartment. The change of environment made me feel more focused and energized." },
+  { date: "2026-09-13", mood: 7, at: "2026-09-14T00:29:00.000Z",
+    tags: ["fun", "social", "personal_growth"],
+    text: "I went on a spontaneous day trip with friends. I almost stayed home because I had things to do, but I'm glad I went. I need more experiences like this." },
+  { date: "2026-09-15", mood: 5, at: "2026-09-16T04:17:00.000Z",
+    tags: ["career", "finance", "personal_growth"],
+    text: "I've been thinking about whether I should pursue a more specialized role or stay broad. Both options sound interesting, and I don't know which one will give me the kind of life I want." },
+  { date: "2026-09-17", mood: 7, at: "2026-09-18T02:34:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "I talked to a mentor about my career today. Instead of telling me what I should do, she asked what kind of day-to-day life I actually want. That question has been stuck in my head." },
+  { date: "2026-09-19", mood: 9, at: "2026-09-20T03:56:00.000Z",
+    tags: ["personal_growth", "fun"],
+    text: "I spent the afternoon learning something completely unrelated to my job. I love the feeling of being a beginner again without worrying about whether I'm good at it." },
+  { date: "2026-09-21", mood: 3, at: "2026-09-22T03:22:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "I received a rejection from a job I was excited about. I know it doesn't mean I'm on the wrong path, but it made me question whether I'm making enough progress." },
+  { date: "2026-09-23", mood: 7, at: "2026-09-24T01:18:00.000Z",
+    tags: ["finance", "career"],
+    text: "I updated my budget today and realized I'm in a better financial position than I thought. Having some savings makes me feel more comfortable taking my time with my next career decision." },
+  { date: "2026-09-25", mood: 9, at: "2026-09-26T02:47:00.000Z",
+    tags: ["fun", "social", "career"],
+    text: "I tried a new restaurant with a friend and ended up talking for hours about places we'd like to travel. It reminded me that I want a career that gives me enough freedom to actually enjoy life." },
+  { date: "2026-09-26", mood: 5, at: "2026-09-27T04:05:00.000Z",
+    tags: ["career", "finance", "fun", "personal_growth"],
+    text: "I keep coming back to the same question: do I want to maximize my career, or do I want a career that gives me more freedom? I think I care about both." },
+  { date: "2026-09-27", mood: 7, at: "2026-09-28T03:38:00.000Z",
+    tags: ["career", "personal_growth", "fun"],
+    text: "I'm starting to realize that I don't necessarily need to choose my entire future right now. I want to keep exploring, build useful skills, and pay attention to what kind of life actually makes me feel energized." },
+];
+
+/**
+ * Maya's check-ins before her written log: January to August 2026.
+ *
+ * Dummy data, drawn once from a seeded shuffle and written down, so it reads
+ * the same on every visit. Weighted a little brighter than Elena's -- her
+ * persona is doing well and unsure, not stretched -- with the odd hard day.
+ * Same encoding as SOFIA_MONTHS.
+ */
+const MAYA_MONTHS = {
+  '2026-01': '..97.957579..15.77.979.757377.7',
+  '2026-02': '7.7.757.797.9515777975..395.',
+  '2026-03': '777777...59..7973..5.9777799999',
+  '2026-04': '75..7777993733.39775779.73997.',
+  '2026-05': '5.355.7.3.9939.9.79757595757.55',
+  '2026-06': '5.775755.35.79777.557773.77.39',
+  '2026-07': '7.39997557755735..1..57579.755.',
+  '2026-08': '9759..5.77777957759.3377..79157',
+};
+
 /** A profile's months as check-in rows, the shape the sample history takes. */
 function monthsToRows(months) {
   const rows = [];
@@ -3993,6 +4089,266 @@ function monthsToRows(months) {
   }
   return rows;
 }
+
+/**
+ * The reading of Maya's sixteen days, made the same way as Sofia's and Elena's:
+ * written from exactly her entries in the reply format the panel asks Claude
+ * for, then passed through this page's grounding, so every quote is hers word
+ * for word and dated from her log.
+ */
+const MAYA_INSIGHTS = {
+  v: 5,
+  key: "upz2q7",
+  at: "2026-09-28T03:45:00.000Z",
+  days: 16,
+  summary: "You come alive when you are learning something new or spending time with curious, adventurous people, while comparing yourself with others and a job rejection brought your two hardest days.",
+  items: [
+    {
+      dimension: "career",
+      verdict: "attention",
+      headline: "Measuring your progress against others knocks your confidence",
+      detail: "Both of your unhappy days came from comparing where you are with others or from a rejection, and each left you questioning whether you are moving fast enough.",
+      common: "doubting whether you are making enough progress",
+      excerpts: [
+        {
+          date: "2026-09-21",
+          text: "it made me question whether I'm making enough progress"
+        },
+        {
+          date: "2026-09-21",
+          text: "I received a rejection from a job I was excited about"
+        },
+        {
+          date: "2026-09-07",
+          text: "started comparing myself to people who seem much further ahead in their careers"
+        },
+        {
+          date: "2026-09-07",
+          text: "I know everyone's path is different, but it still got to me"
+        }
+      ],
+      ideas: [
+        "Notice when looking at job postings turns into comparing yourself",
+        "Write down what you have built this year, like the course you finished",
+        "Return to your mentor's question about the day-to-day life you want"
+      ]
+    },
+    {
+      dimension: "personal_growth",
+      verdict: "working",
+      headline: "Being a beginner again is where your best days come from",
+      detail: "Your very happy days keep describing learning something new just for yourself, with no pressure to be good at it.",
+      common: "learning something new just for yourself",
+      excerpts: [
+        {
+          date: "2026-09-19",
+          text: "I love the feeling of being a beginner again without worrying about whether I'm good at it"
+        },
+        {
+          date: "2026-09-09",
+          text: "It feels good to know I'm still building skills"
+        },
+        {
+          date: "2026-09-04",
+          text: "I've been wanting to try something completely unrelated to work"
+        }
+      ],
+      ideas: [
+        "Keep one thing on the go that has nothing to do with work",
+        "Notice which new skills you keep coming back to",
+        "Give yourself permission to try things you may not stick with"
+      ]
+    },
+    {
+      dimension: "social",
+      verdict: "working",
+      headline: "Curious, adventurous company energizes you",
+      detail: "Time with friends who are trying new things, and conversations about other kinds of work and travel, keep lifting you and widening what you imagine for yourself.",
+      common: "time with curious people and new conversations",
+      excerpts: [
+        {
+          date: "2026-09-25",
+          text: "ended up talking for hours about places we'd like to travel"
+        },
+        {
+          date: "2026-09-13",
+          text: "I'm glad I went. I need more experiences like this"
+        },
+        {
+          date: "2026-09-05",
+          text: "reminded me how much I enjoy being around people who are curious and trying new things"
+        },
+        {
+          date: "2026-09-01",
+          text: "it made me curious about what else I could do with my skills"
+        }
+      ],
+      ideas: [
+        "Say yes to the next spontaneous plan, even with things to do",
+        "Ask more people about work that is different from yours",
+        "Plan something with the friend you talked travel with"
+      ]
+    },
+    {
+      dimension: "finance",
+      verdict: "pattern",
+      headline: "Savings are giving you room to decide slowly",
+      detail: "Knowing you have some savings makes it easier to take your time, as you weigh a career that maximizes growth against one that gives you more freedom.",
+      common: "weighing ambition against freedom",
+      excerpts: [
+        {
+          date: "2026-09-26",
+          text: "do I want to maximize my career, or do I want a career that gives me more freedom"
+        },
+        {
+          date: "2026-09-23",
+          text: "Having some savings makes me feel more comfortable taking my time with my next career decision"
+        },
+        {
+          date: "2026-09-15",
+          text: "I don't know which one will give me the kind of life I want"
+        }
+      ],
+      ideas: [
+        "Write down what freedom would look like in an ordinary week",
+        "Treat your savings as time to explore rather than pressure to decide",
+        "Check your budget again before any big career move"
+      ]
+    }
+  ],
+  attributions: [
+    {
+      date: "2026-09-01",
+      dimensions: [
+        "career",
+        "personal_growth",
+        "social"
+      ]
+    },
+    {
+      date: "2026-09-02",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-04",
+      dimensions: [
+        "fun",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-05",
+      dimensions: [
+        "social",
+        "relationships",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-07",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-09",
+      dimensions: [
+        "personal_growth",
+        "career"
+      ]
+    },
+    {
+      date: "2026-09-11",
+      dimensions: [
+        "environment",
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-13",
+      dimensions: [
+        "fun",
+        "social",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-15",
+      dimensions: [
+        "career",
+        "finance",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-17",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-19",
+      dimensions: [
+        "personal_growth",
+        "fun"
+      ]
+    },
+    {
+      date: "2026-09-21",
+      dimensions: [
+        "career",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-23",
+      dimensions: [
+        "finance",
+        "career"
+      ]
+    },
+    {
+      date: "2026-09-25",
+      dimensions: [
+        "fun",
+        "social",
+        "career"
+      ]
+    },
+    {
+      date: "2026-09-26",
+      dimensions: [
+        "career",
+        "finance",
+        "fun",
+        "personal_growth"
+      ]
+    },
+    {
+      date: "2026-09-27",
+      dimensions: [
+        "career",
+        "personal_growth",
+        "fun"
+      ]
+    }
+  ],
+  notes: {
+    career: "you are weighing what kind of work fits the life you want, not just the next step",
+    personal_growth: "learning for its own sake keeps showing up on your best days",
+    social: "curious friends and new conversations leave you energized",
+    fun: "new experiences remind you what you want your career to leave room for",
+    finance: "savings are giving you room to take your time",
+    environment: "a change of place helped you focus",
+    relationships: "time with friends who are trying new things lifts you"
+  }
+};
 
 /**
  * The reading of Elena's sixteen days, made the same way as Sofia's below:
@@ -4798,6 +5154,8 @@ const SEED_PRIORITIES = ['contribution', 'career', 'personal_growth'];
 const SOFIA_PRIORITIES = ['personal_growth', 'social', 'health', 'career'];
 /* Elena's, from "What matters right now" on her persona, in its order. */
 const ELENA_PRIORITIES = ['finance', 'career', 'health'];
+/* Maya's, from "What matters right now" on her persona, in its order. */
+const MAYA_PRIORITIES = ['career', 'personal_growth', 'finance'];
 
 /**
  * Everything a profile with its own record brings with it, by profile id.
@@ -4811,6 +5169,10 @@ const OWN = {
   elena: {
     signals: ELENA_SIGNALS, priorities: ELENA_PRIORITIES, reflections: ELENA_REFLECTIONS,
     insights: ELENA_INSIGHTS, history: monthsToRows(ELENA_MONTHS),
+  },
+  maya: {
+    signals: MAYA_SIGNALS, priorities: MAYA_PRIORITIES, reflections: MAYA_REFLECTIONS,
+    insights: MAYA_INSIGHTS, history: monthsToRows(MAYA_MONTHS),
   },
 };
 const own = () => OWN[recordOwner()];
