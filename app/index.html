@@ -3236,6 +3236,24 @@ const STORE_KEY = 'lifeos.demo.v2';
 const HISTORY_KEY = 'lifeos.demo.history.v1';
 const BODY_KEY = 'lifeos.demo.body.v1';
 
+/* Which demo profile is showing. Declared up here because the record is
+   seeded from it before anything renders. Remembered per browser, as a
+   convenience only: a blocked store just means the page opens on Sofia, the
+   first profile. */
+const PERSONA_KEY = 'lifeos.demo.persona';
+let personaId = (() => {
+  try { return localStorage.getItem(PERSONA_KEY) || 'sofia'; } catch { return 'sofia'; }
+})();
+
+/* Profiles with a record of their own. Everyone else shares the original
+   record, so their log is exactly what it was before profiles existed. Each
+   own record is saved under its own key, so a check-in made as Sofia never
+   lands in anyone else's log. */
+const OWN_RECORDS = new Set(['sofia']);
+const recordOwner = () => (OWN_RECORDS.has(personaId) ? personaId : '');
+const editsKey = () => (recordOwner() ? `${STORE_KEY}.${recordOwner()}` : STORE_KEY);
+const editsDoc = () => (recordOwner() ? `state/edits-${recordOwner()}` : 'state/edits');
+
 /* ---------------------------------------------------------------------------
    The sample history, written down once
    ---------------------------------------------------------------------------
@@ -3445,7 +3463,7 @@ let storeTier = 'memory';
 
 function localLoad() {
   try {
-    const raw = localStorage.getItem(STORE_KEY);
+    const raw = localStorage.getItem(editsKey());
     if (!raw) return null;
     const saved = { ...emptyEdits(), ...JSON.parse(raw) };
     // Same rule as the account's copy: an older seed is replaced, not merged.
@@ -3457,7 +3475,7 @@ function localLoad() {
 
 function localSave(edits) {
   try {
-    localStorage.setItem(STORE_KEY, JSON.stringify(edits));
+    localStorage.setItem(editsKey(), JSON.stringify(edits));
     return true;
   } catch {
     return false;
@@ -3515,7 +3533,7 @@ async function connectStore() {
   try {
     const [hist, snap, bodySnap] = await Promise.all([
       store.doc('state/history').get(),
-      store.doc('state/edits').get(),
+      store.doc(editsDoc()).get(),
       store.doc('state/body').get(),
     ]);
 
@@ -3547,7 +3565,7 @@ async function connectStore() {
       // copy that was saved before it.
       S.edits = dirty ? mergeEdits(fresh, S.edits) : fresh;
       // The account still holds the old copy; put the reseeded one back.
-      if (fresh !== saved) store.doc('state/edits')
+      if (fresh !== saved) store.doc(editsDoc())
         .set({ edits: S.edits, savedAt: new Date().toISOString() }).catch(() => {});
     }
     if (stored || snap.exists) applyEdits();
@@ -3580,7 +3598,7 @@ function persist() {
   };
   try {
     // Last write wins, which is the right semantics for one person's own record.
-    store?.doc('state/edits')
+    store?.doc(editsDoc())
       .set({ edits: S.edits, savedAt: new Date().toISOString() })
       .catch(() => { dropStore(); render(); });
   } catch (err) {
@@ -3766,6 +3784,66 @@ const SEED_REFLECTIONS = [
   { date: "2026-09-16", mood: 7, at: "2026-09-17T03:41:00.000Z",
     tags: ["contribution", "career", "personal_growth"],
     text: "The most satisfying part of the day was helping someone turn a vague idea into a concrete solution. That's probably what I enjoy most about the work I do." },
+];
+
+/**
+ * Sofia Nguyen's own reflections, from the Sofia persona log.
+ *
+ * The other demo profiles share the record above. Sofia has one of her own,
+ * so switching to her swaps the whole record — log, calendar, journal and the
+ * impact table — rather than relabelling someone else's days. Times are the
+ * Pacific evening each was written, stored in UTC like the rest. Faces use the
+ * same scale as above: Very happy 9, Happy 7, Neutral 5, Unhappy 3.
+ */
+const SOFIA_REFLECTIONS = [
+  { date: "2026-09-01", mood: 7, at: "2026-09-02T02:42:00.000Z",
+    tags: ["social", "career", "personal_growth"],
+    text: "I had a really fun conversation with my friend about colleges today. We don't know exactly what we want yet, but it was exciting to imagine different possibilities." },
+  { date: "2026-09-02", mood: 5, at: "2026-09-03T04:18:00.000Z",
+    tags: ["personal_growth", "health"],
+    text: "I spent most of the day doing homework. Nothing was really wrong, but I felt like I didn't have much time to do things I actually enjoy." },
+  { date: "2026-09-03", mood: 9, at: "2026-09-04T00:36:00.000Z",
+    tags: ["personal_growth", "fun", "career"],
+    text: "I tried a photography class after school today. I didn't expect to enjoy it this much. It made me wonder what other things I might be interested in." },
+  { date: "2026-09-04", mood: 7, at: "2026-09-05T03:11:00.000Z",
+    tags: ["family", "career", "personal_growth"],
+    text: "My parents asked me what I want to study in college. I still don't know, but they were supportive and told me I don't have to figure everything out right now." },
+  { date: "2026-09-05", mood: 3, at: "2026-09-06T05:03:00.000Z",
+    tags: ["career", "personal_growth", "social"],
+    text: "Everyone at school seems to already know what they want to major in. I feel behind because I still have so many different ideas." },
+  { date: "2026-09-07", mood: 7, at: "2026-09-08T01:24:00.000Z",
+    tags: ["social", "fun"],
+    text: "I spent the afternoon with my friends instead of thinking about college. I realized how much better I feel when I give myself permission to just have fun." },
+  { date: "2026-09-09", mood: 5, at: "2026-09-10T04:47:00.000Z",
+    tags: ["health", "personal_growth"],
+    text: "I studied for a test all evening and didn't really have time for anything else. I'm tired, but at least I feel prepared now." },
+  { date: "2026-09-11", mood: 7, at: "2026-09-12T00:12:00.000Z",
+    tags: ["contribution", "social", "personal_growth"],
+    text: "I volunteered at school today. I liked feeling useful and working with other people. It made me think that helping people might be something I want to do more of." },
+  { date: "2026-09-13", mood: 9, at: "2026-09-14T02:05:00.000Z",
+    tags: ["family", "health", "fun"],
+    text: "I went hiking with my family today. I didn't think about school or college for a few hours, and it felt really good to disconnect." },
+  { date: "2026-09-15", mood: 3, at: "2026-09-16T04:34:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "I got another email about college applications and suddenly felt overwhelmed. There are so many choices and I don't know how I'm supposed to know which one is right for me." },
+  { date: "2026-09-17", mood: 7, at: "2026-09-18T03:26:00.000Z",
+    tags: ["family", "career", "personal_growth"],
+    text: "I talked to my older cousin about what she studied in college. She said she changed her mind twice, which actually made me feel better about not knowing yet." },
+  { date: "2026-09-19", mood: 9, at: "2026-09-20T01:18:00.000Z",
+    tags: ["personal_growth", "fun", "career"],
+    text: "I spent the afternoon trying different digital design tools. I completely lost track of time. I think I might have found something I want to explore more." },
+  { date: "2026-09-21", mood: 5, at: "2026-09-21T14:53:00.000Z",
+    tags: ["health", "personal_growth"],
+    text: "I didn't sleep very well last night and felt tired at school today. I couldn't concentrate as well as usual." },
+  { date: "2026-09-23", mood: 7, at: "2026-09-24T01:41:00.000Z",
+    tags: ["personal_growth", "career"],
+    text: "I worked on a school project where I got to choose the topic myself. I liked having the freedom to decide what to work on instead of being told exactly what to do." },
+  { date: "2026-09-25", mood: 9, at: "2026-09-26T03:37:00.000Z",
+    tags: ["social", "career", "fun"],
+    text: "My friends and I went out after school. We talked about what we might do after graduation and realized none of us really knows yet. It was nice knowing I'm not the only one figuring things out." },
+  { date: "2026-09-27", mood: 7, at: "2026-09-28T04:02:00.000Z",
+    tags: ["career", "personal_growth"],
+    text: "I've been thinking about college again, but I'm trying not to pressure myself to have one perfect answer. I want to explore a few things first and see what actually feels right." },
 ];
 
 /**
@@ -4057,8 +4135,12 @@ function priorityOrder() {
 function seedEdits() {
   const e = emptyEdits();
   e.seedV = SEED_V;
-  e.insights = structuredClone(SEED_INSIGHTS);
-  for (const r of SEED_REFLECTIONS) {
+  /* Sofia's record starts with no reading. SEED_INSIGHTS were read from the
+     original record's days and quote them; shown beside hers they would be
+     findings about somebody else. */
+  const own = recordOwner() === 'sofia';
+  e.insights = own ? null : structuredClone(SEED_INSIGHTS);
+  for (const r of own ? SOFIA_REFLECTIONS : SEED_REFLECTIONS) {
     e.checkIns[r.date] = r.mood;
     e.notes[r.date] = r.text;
     e.tags[r.date] = [...r.tags];
@@ -4553,13 +4635,6 @@ const PHOTOS = {
   david: 'data:image/webp;base64,UklGRqQQAABXRUJQVlA4IJgQAAAwRACdASqEAIQAPkkejEUioaEU+FaQKASEoAxcAdCq/eebHyL2pfHorXIPmaum+tTzCeglzpXOzdejvS1e7YuOX/4rKX8MNRr5t+LsgzNb5L6jr+Mv/jo8YORT0ctGL1/7B36/9cdFzOqwJ8pVxu3ppcrDJ47cU5ftP0inT+jHL3t7lUYqlZ1JIRsdU/alpZnyQ3a9SVw3oxtmu6hD7+KhtLwBWTk9imNkFWVqGfKYiylM4f9xbS8/D3EbcMGBQb5D6TK59cceUtJWe0i7wl5z/7mPZBiM8V6lqB80SRo6IDQvhcNq13e7+4F5vJZpxdm135izPTxnMEEMsjVdz64HWwZE/GtJeYp+FnER+QIkWDcGrVb0Q+XZr8UUTVffa7nxx6svQ32qEa1+lLPEdbwre4aVvhTx/Yby68+Zei0ZOJgjBlIZJxpm3e5c6Tgnkcq1r7O+SJWFdzPog/u7MSs6zD+Pk2rPfmKrKRMOnwqe0JsPsRmZjRFotLNb0fXNhveuU0SEqre48AKEuOKtuhfRL/3Dnh1yvlgSEnkZ/IcGPl3v2JHDv16Zpj5R9GeWEdV45YliB/5+zQNzloQBXdAwsVP6jYpU0zpSTb4Cy6S0szntW5FKa4Qu6fNpER4jTZLsdZC3oU4Qkt3dtAS1SCHACP8hOUtBVULhrfYRvS8cxURTP+NzgX9CgnhRp7rvc0S9iWrlmDL1zEwn+6uxY6ENIg4EBNUWLnuSIAD+/ArueQ8pB//rh/0mJPJ+YxsKAdf4ZForr2O1a5cPXJYaVJKrO/MtWRTSh3OWG+Rsy9/Pbq6mfMvzv7MJhF6U3ZG1MBAT+p5EqbZTRw0Yjj7KqyP3LC5XyrCgQo214WNEUqNqJ4LBVNKfQh8zvNWeisFqxYrBNXSjgAFnSmIGFcTAlNPaeH7dI6ZEZUuiyGRnavu+zULtQmyTuvhRHImMKsJO3O2ftb2pIhWMlGN/hNGewVwI0EyfvLlIx0bgH5uzZi2S9RbHoHbgaoEwiAWn8SletU/bxQfgevbxOnEQRIQ1XnX/U3SKcXqtWthxPKPUKlql4wfcqnVNrVNXWw2Qua6Rpblm4RUgvS1Bh9VTz+66Lg8knDo/RSC8OKY+Jp1znMNXI5yS1n9i3WcELSq2OouPOjTEVKCuD+UQv15DPdMRMe9jKQJKeVs2OaEZSv07G27NTJT1Meno7o97F62JWgqAAuXi1feWjV5Z1OUbUsIMqQ9HC0/vQatZwLGKNy9QbZcN7NLBFyj7s4T9Q165iWGeAAyTzCP2uZwrUBeJXnVQwqkFf0s8naSqoJnpKjDx5uTlC8PSXVbtyozSEubcwqOMJyOxrY98RWt3ogB0XPgpNMETM/PxnQmKHRVwUoc2641hLDjAGnMG6kAg4ya0XCKIAkWu6eWl8Hp/h0objk2JbJzVcEewybDkSft5x/kZdiyq8zpP89vC8lx3fT3MiwYQ/RBeAKJLS4PW8D4SJ7/YLVsZmisEug+h0r4v6OtZt07DHWcDk3gqL8nxryJeS48iKHU4bOqeHhyFxFFRjBhvpJ4L2v0Nu4pcu+JB0uOhOJ8i1KcshTr5KilNI4KU2tNdZt+z3QmHpxaWTaN4Q+6626iBv0NUxJxQUg3C8uLTa0L0CPFaT8r8XU8oAIyE9ttgmXhVOkBH8FsIaWrmgSnHnnmgcmS7yb7vEbJRlKlW/TylxTwD1kX/mXbSOM/dByPJnce5vTzr3+UYLg/s2HKGSPJM7RsZdPxuC76w/5EgThjoYLd2TFFwW5qLvgx3ek06/ejwtPzr+p70BjNvIl4lVHHeva3pHjrDo3KxTsb+t7culBYbo76qckBmjnfB66qtZHIBSUiqKGhGY2APXgUrRALHIujAgt3R4cAlxCpruDjsZWe59/58pTcdmFYhXnCkW6XRRPltJODmZXBBFR+6vuDOJdk7/1M7x+vWvQXMbVujbbqOM/DCCW5zq71LQQaKfzDMHBpuUBWZb9EgCaHrKzCbsY/9TmSnnO3ufTVSJ2lowZvlMaFGN0IobzY2v0jZK5ELBhqV1XyUJScfCgSmzrTYsnJTtpiFizlLRQrTPLMdgq2JjRsdTGzFPQQKRJPRWR/jkcBVIBx3y6C+KEBp+zov6Z4HXKdQKoU7HNKoYUUDT/d+XzrBfm0jLWTiTVfoJWUgYc2iEPsMdfbdQayP8PXaHL3l+4s8zrlDI2uRDN3MODnc72VvOd/rEaYV+Jz9Hiz1UmpA2j0t0YkZxliI1kcKs7ove0wGqw++f0T+nDum3pbS2qaYv5+4OPBbk8PgbeE6ibJthfhoHYjaqT6jLpePcgpUqCtQ7Y+CmemqRqydjxuL0xy0NF74vX0Qv/JbaFLLZTIYD3Nrn5eHP1UgCCRhgBh0WqMn9b6MnrfBe5G0745ILtxMOnZOsZJ0Dyq6W6S5k+PWk5wzDKPI9AE/gltVtG+XffF2AKInoFyUXaG2d0dLsK2A0dK1auKE11UGtBx1DGJc3uU+4BY0Emx/b/I68zaOMJw+orGzWLSU/gtRlFgRZNrxUOlmm3LIj/1ipeDEvszAwVt43yRCsIVVpuUmlAnK5X/vglPUynIn+qDoH9ExRxGnvohPgZ0iZo1FYcpnb7Gg9C3m9HKIhE56fnBmrzLIQsuiQjvk8RLjCTrUSmeS6ahcXP+eFt78Uvv+DSDvKjb1tkZTHNXFcj2iJyZU3wdOQKnOZb9GQg1vAQwqYs2ySC3E2DGRxsqlawOoHZGJCuG0VIpTCJhzzYVuiNfDGogoXXct/bjl8b+fymcaJlyB+AE08Vf52+/d1lVLzbq3+Y1ok/3fRteSfYvWTBz4rkBdnHdy+XKN+fwBaB6Nf/urEhid2rZTDbL3gxwmUen6gYZbQz6zwidv4TbDm0z55NY0NG+bgR5A2xqefqh1P4fdj/XPylxszU2fR6Rn/JdsMG8bHvGsLLGTfGkPQHg4PLzqQM3vpcKUaSFRUg3v7k9B59E+Jlf+XMOzIW+pQ6tRrHIAvDbzfr8guYsKbezrafD8Iky+9QT9KPYuoz/3Evy1pAWRewf+65r3x/3UOuiu4wLdMj5XA9RLRx2SQBXmiqJZWaZ3cmuKjWLuCSqM/gMETXN6HXWtjyw4SVV4s8obc4K5wmkGu7vScQeCt2THOvBW9W0UabB+KwCe4T6Ki0tCQ28Lzr1RbNQs5RBk9iqnUkQRfSAAoL0M4Po/2BdLcaXE7IcMZ4Xkf/OPtKx3wB+Q+v0zWdzTIzLIoY5OBVPrc9SB0+bIn+2Hte303eMKH8ZNuTar+oL/FmCQApTxLbyW+j8Bt/NcpnOcnbX0TborrTGcXSMsWabN/aopH5q61YBQP8PPQlL99zQ1z/7O5bM6y0cPDFcJ2eT6AfpneAx4W4NAYWkuwGRKqmfCSiocWbMHNliH3xTXV5FWrWZJ2VZybBGM5XZ/EumuYEDkRiuGmnp6T0T2zllGJOxAf9Vgb5wDZLKPsgqrFdb6NK9FR5dtlhGeYmnytBB5ierRB2Ly2jG7u1IwpyLs+zfBqgwoM402VdPxoJb6pOYE1ZMx8BGzrxh+cqj6UB+bcy4cHVUM4dILiVGRT47Qp44HcNmZ/DLgvsAkqMwof2dQle99O52yF/WrC6nqztTS5fI5wophBSYsYdLAsgrubBo1ZveWmt5u0QfijqjfgPh13ULOcSj8QMHgWDWuXfoFa3dqT+rD6qhBshBb2wxz/REW1/yWtqlRhzoAlT6yEcBZOXmyvymeDDSbB3/2lLitgnkMan4828l62IXG+kHnstJOe8Zce9jMkpCFTUeufN+MKcNz5wdRVycvpHWEYHoWrW4PpmlijV4/nGHI02TgBt2uxneYuTmAVxXGuz7zDKdfx1ocK/mnxn9PYUBDiu1IzcPjEM4bfjHH3PIZ/ISYjumbVhSzvP4nOBPFsQeR3NnzqC6HOkR9lP9+eOugj6DMf3ZrJnQPH4bb3f31UtqBlEsFMjJTRbvznrSQHooghCQCrVkr8EZEfE4My6nfcIPZdthAbX5/ZyCW2brTd3cZr4jkX/kve2Eq/WtqSrhLwYJDtWF039LEe3auK0sqQhqgbimZSnW+OP5jk+uZ6oHUSfq2tnb8x8DiRzbzO27CkxH79fsQV/kvPgKtVol/6kg3mKgU+odDnHEwhe97gm0+27hU/co+HCG3+yI83QcMpfmt5fCNc751GclfARNgqa7wh4s4oF25YRvXwDflMVA4XYrNIz7d+cS2vr/oH/ysY1nCkF216j01Cc1C072G07ffHj8T5bgHjHDpnRgOZcAcPKDyiVRk1hG8od8WGxZ53sSEhaBvUfELauEa9x6Vt88VZEjy1WqqWchYhbLAV5etBrMrxwxgpc2qT4WOvyWXN2F2tcUoFfQqVUzzCEXI4WZdCxkhP977hb/mezUqPihoqft9ABarZ/6AIQ83oUzsGLS8Utf2X5fyjxsH2/GgyzG2DV2ri4sUHcWfUNFGiqugIw9jO6m5tNom1qovI8sxUTGr3BduattTnl71rfCktKJfME1nvU9s9RzyExQqHi9c+W4P+a7nS1WJoKQZJgkoIc5Xt1TTjVyttab53dFLnf/2AduN1CBd9j6hf+aGTuoPPlXOWvJIMMXtnG3MAVuW8JfYS4RZvlVfMWg7tu/M3k43MMAG8lgwYMoMOOSCjXhH+6yqZN0qcZbMp4YwF1wEE9AvwO2qYyLGmTSh3/8iayvvMmkLzlIcX/zmfwGndvWldyyIlbK3/8VCTfow4Z/BjGbavTp7a0OISrdPAdwWusOvlgCsS1ZvYZCXdyDrlj6XfU2Osz623M3hEqsDv17ymBjyg1NtzGMERT0fEuwaN46gNlN4ealWggHKfDvmaW76HYsMqOU/m9cI5hfHtl2KlQZq/mRt02tSOE90JN8rdIcE4VLzhl58TBCCaYsaESJRP80B1v+LzJPlNBUt4BnJh9WD9BjWydbVjCrSlexpFzEZzsk6wp/dEZMtvjrnWJcqUipZpaoE/jMFt1Cxi3OUX3i3QX8urisN+hgcxtMKwj3pQ+RgkBhVoi/xeOpfGp3OC3iaXFXtLiEka9qekAxzDV/Qz6GvPLmaILuJ6l5twO4wjpck4xYDYzwF9EZiaWCRaw6nl+bjh6D/+/vbRmuRlTE4wISkx0HXsIFumDHzhg7p4u/bF2nOPE9QqK/Gi4PtrNaLOkKcyzMBx2c1BE6dl063XBgH3ZcbfmyKFzxUQDqA1pLVIm5YLLOcbiG5gxineTLqWqgzWibic4a2PibqMDbGgraIG7eVHpDqYB6/AhC4DFUWsbZpEkQi7shymBTmNMY0b3Tv+LNiv7lGzb+61hDf36vdCcGqQ7nJOML8NKLbEGOz0A8Dy5lNufDdeEjYZENECFwHoFwRNnz+EpMkyB2oHqkoPcob+FuDzACcKYLlYjodUfn6z0qErQzOqCNBpKrzii7AZXMtLOHYsZWAeSmRJsRt4aPpeIOd0x+ItWQFys9BqQYO1uYFYZMZm80b9rMwLBmGcl1Z4nYAGEIz09H4wFucKJz1VL9Pq7PFGTechiFO5feuVwPxqhHlgBcqEJLoT4Aq8C1hMq4dNeuASSCqxVRoE5HdNhyqJTHq/OPRmnpYjCx+UvnzjJV1GqvqBWAnfMV3LwMQGpQAAAA=',
   evelyn: 'data:image/webp;base64,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',
 };
-const PERSONA_KEY = 'lifeos.demo.persona';
-
-/* Remembered per browser, as a convenience only: a blocked store just means
-   the page opens on the first profile. */
-let personaId = (() => {
-  try { return localStorage.getItem(PERSONA_KEY) || ''; } catch { return ''; }
-})();
 let whoMenuOpen = false;
 
 function currentUser() {
@@ -4582,11 +4657,43 @@ function paintAvatar(box, u) {
 }
 
 function choosePersona(id) {
+  const before = recordOwner();
   personaId = id;
   try { localStorage.setItem(PERSONA_KEY, id); } catch { /* sandboxed */ }
   whoMenuOpen = false;
-  renderHeader();
+  if (recordOwner() !== before) switchRecord();
+  else renderHeader();
   openPersona(currentUser());
+}
+
+/**
+ * Swap in the record that belongs to the profile just picked.
+ *
+ * Everything that reads a day — the log, the calendar, the journal, the impact
+ * table — reads S.edits, so replacing it is the whole switch. View state that
+ * points into the old record (an open drawer, a picked day, a half-typed tag
+ * set, the log's date window) is dropped with it.
+ */
+function switchRecord() {
+  S.edits = localLoad() ?? seedEdits();
+  dirty = false;
+  Object.assign(S, {
+    insightState: 'idle', insightError: '', insightOpen: null, dimOpen: null,
+    insightAdded: false, noteSaved: false, tagDraft: new Set(),
+    calDay: TODAY, logFrom: '', logTo: '',
+  });
+  applyEdits();
+  render();
+  // The account's copy of this profile's record, when the view has one.
+  const doc = editsDoc();
+  store?.doc(doc).get().then((snap) => {
+    if (doc !== editsDoc() || !snap.exists) return;
+    const saved = { ...emptyEdits(), ...structuredClone(snap.data().edits ?? {}) };
+    if (saved.seedV !== SEED_V) return;
+    S.edits = dirty ? mergeEdits(saved, S.edits) : saved;
+    applyEdits();
+    render();
+  }).catch(() => {});
 }
 
 /** Shows who was just picked, as the persona sheet describes them. */
